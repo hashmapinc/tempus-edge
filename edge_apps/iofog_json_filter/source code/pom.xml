@@ -15,7 +15,7 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.7.8</version>
-</dependency>
+        </dependency>
          <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -23,13 +23,11 @@
             <version>2.8.2</version>
         </dependency>
 
-
-
-            <dependency>
-                <groupId>com.iotracks</groupId>
-                <artifactId>container-java-sdk</artifactId>
-                <version>1.1.2</version>
-            </dependency>	</dependencies>
+        <dependency>
+            <groupId>com.iotracks</groupId>
+            <artifactId>container-java-sdk-tempus</artifactId>
+            <version>1.1.2</version>
+        </dependency>	</dependencies>
 
 	<build>
 	<pluginManagement>
@@ -40,7 +38,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>com.hashmap.tempus.iofog.IoFogDriver</mainClass>
+                                <mainClass>com.hashmapinc.tempus.iofog.IoFogDriver</mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>

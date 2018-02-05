@@ -2,6 +2,7 @@ package com.hashmapinc.tempus.clientdevice.sqlconfig;
 
 
 import com.hashmapinc.tempus.clientdevice.util.PropertyReader;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
@@ -14,17 +15,30 @@ import java.sql.SQLException;
 public class SQLDriver {
 
 
-    public static Connection connect() {
+    final static Logger logger = Logger.getLogger(SQLDriver.class);
+    String url;
+    public SQLDriver()
+    {
+         url = PropertyReader.getInstance().getProperty("sqlite.url");
+    }
+    public SQLDriver(String url)
+    {
+        this.url=url;
+    }
+    public  Connection connect() {
         Connection conn = null;
         try {
 
-            String url = PropertyReader.getInstance().getProperty("sqlite.url");
+
             conn = DriverManager.getConnection(url);
+            logger.info("Created new SQL connection");
 
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
+            logger.error("Error creating connection"+e.getMessage());
         }
 
         return conn;
     }
+
 }

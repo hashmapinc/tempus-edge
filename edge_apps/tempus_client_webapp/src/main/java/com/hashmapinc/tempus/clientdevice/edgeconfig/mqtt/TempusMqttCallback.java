@@ -4,25 +4,32 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.hashmapinc.tempus.clientdevice.ApplicationConstants;
 import com.hashmapinc.tempus.clientdevice.edgeconfig.ConfigMessageHandler;
+import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class TempusMqttCallback implements MqttCallback{
     ConfigMessageHandler configMessageHandler;
-    public TempusMqttCallback(ConfigMessageHandler configMessageHandler)
+    MqttManager client;
+    final static Logger logger = Logger.getLogger(MqttCallback.class);
+    public TempusMqttCallback(ConfigMessageHandler configMessageHandler,MqttManager client)
     {
         this.configMessageHandler=configMessageHandler;
+        this.client=client;
     }
     @Override
     public void connectionLost(Throwable throwable) {
-
+        logger.info("Connection lost with Mqtt reconnecting");
+        client.start();
     }
 
     @Override
     public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
+        logger.info("New message arrived");
         String stringMsg=new String(mqttMessage.getPayload());
-        System.out.println(stringMsg);
+        logger.debug("Incomming message "+stringMsg);
         Gson gson = new Gson();
         JsonObject jsonConfig = gson.fromJson(stringMsg, com.google.gson.JsonObject.class);
         if(jsonConfig.has(ApplicationConstants.SHARED))

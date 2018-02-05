@@ -2,6 +2,8 @@ package com.hashmapinc.tempus.clientdevice.services;
 
 import com.hashmapinc.tempus.clientdevice.context.ApplicationContext;
 import com.hashmapinc.tempus.clientdevice.dao.AppConfigDao;
+import org.apache.log4j.Logger;
+
 import java.util.Map;
 
 public class ApplicationService {
@@ -14,9 +16,6 @@ public class ApplicationService {
 
     public Map<String,String> getContext() {
         return appConfigDao.getContext();
-    }
-    public void addDeviceId(String name) {
-        appConfigDao.addDeviceId(name);
     }
 
     public String getDeviceId() {

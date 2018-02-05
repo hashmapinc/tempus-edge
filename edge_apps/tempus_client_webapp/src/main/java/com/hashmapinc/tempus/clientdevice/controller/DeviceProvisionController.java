@@ -1,9 +1,11 @@
 package com.hashmapinc.tempus.clientdevice.controller;
 
 import com.hashmapinc.tempus.clientdevice.ApplicationConstants;
+import com.hashmapinc.tempus.clientdevice.MainApp;
 import com.hashmapinc.tempus.clientdevice.context.ApplicationContext;
 import com.hashmapinc.tempus.clientdevice.edgeconfig.mqtt.MqttManager;
 import com.hashmapinc.tempus.clientdevice.services.ApplicationService;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,19 +19,20 @@ import java.util.Map;
 public class DeviceProvisionController {
 
     ApplicationService applicationService = new ApplicationService();
-   @GetMapping("/")
-   public String index( Model model) {
-       String deviceId=applicationService.getDeviceId();
-       if(deviceId==null)
-      return "index";
-       else
-       {
-           model.addAttribute("name", deviceId);
-           model.addAttribute("isConnected", ApplicationContext.getContext().getCommunicationManager().getStatus());
-           return "hello";
-       }
+    final static Logger logger = Logger.getLogger(DeviceProvisionController.class);
+    @GetMapping("/")
+    public String index( Model model) {
+        String deviceId=applicationService.getDeviceId();
+        if(deviceId==null)
+            return "index";
+        else
+        {
+            model.addAttribute("name", deviceId);
+            model.addAttribute("isConnected", ApplicationContext.getContext().getCommunicationManager().getStatus());
+            return "hello";
+        }
 
-   }
+    }
 
     @PostMapping("/reconfigure")
     public String reconfigure( Model model) {
@@ -47,13 +50,14 @@ public class DeviceProvisionController {
 
     }
 
-   @PostMapping("/hello")
-   public String sayHello(@RequestParam("name") String name,@RequestParam("serverIP") String serverIP,@RequestParam("password") String password,@RequestParam("port") String port, Model model) {
-       applicationService.configureDevice(name,password,serverIP,port);
-       model.addAttribute("name", name);
-       model.addAttribute("isConnected", ApplicationContext.getContext().getCommunicationManager().getStatus());
-      return "hello";
-   }
+    @PostMapping("/hello")
+    public String sayHello(@RequestParam("name") String name,@RequestParam("serverIP") String serverIP,@RequestParam("password") String password,@RequestParam("port") String port, Model model) {
+        logger.info("Configuring Device with Deviceid: "+name);
+        applicationService.configureDevice(name,password,serverIP,port);
+        model.addAttribute("name", name);
+        model.addAttribute("isConnected", ApplicationContext.getContext().getCommunicationManager().getStatus());
+        return "hello";
+    }
 
     @GetMapping("/hello")
     public String getDeviceInfo(@RequestParam("name") String name,@RequestParam("serverIP") String serverIP,@RequestParam("password") String password,@RequestParam("port") String port, Model model) {

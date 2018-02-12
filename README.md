@@ -42,7 +42,7 @@ Follow instructions in following link to install iofog on your machine:
 
     https://iotracks.com/products/iofog/installation/linux/ubuntu
 
-OR, use the development_fog dockerfile to build your own preinstalled iofog instance.[Instructions to run can be found here.](development_fog/README.md)
+OR, use the development_fog dockerfile to build your own preinstalled iofog instance. [Instructions to run can be found here.](development_fog/README.md)
     
 ### Provision the IOFOG 
    

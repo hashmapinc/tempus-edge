@@ -1,4 +1,4 @@
-# Development Fog - 
+# Development Fog
 
 ## Docker Quickstart
 For development purposes, it is often easier to run iofog in a docker container locally.

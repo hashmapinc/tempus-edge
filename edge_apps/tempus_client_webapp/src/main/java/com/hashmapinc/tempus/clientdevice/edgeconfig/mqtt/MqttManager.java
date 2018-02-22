@@ -31,14 +31,16 @@ public class MqttManager implements CommunicationManager{
             String serverIp=context.get(ApplicationConstants.SERVER_IP);
             String port=context.get(ApplicationConstants.SERVER_PORT);
             String password=context.get(ApplicationConstants.PASSWORD);
+            client= MqttClientFactory.getClient("tcp://"+serverIp,port,topicName,password);
             client.setCallback(new TempusMqttCallback(new ConfigMessageHandler(),this));
             logger.info("Mqtt Client Started");
-            client= MqttClientFactory.getClient("tcp://"+serverIp,port,topicName,password);
             client.subscribe(PropertyReader.getInstance().getProperty("tempus.mqtt.subscribetopic"));
             client.publish(PropertyReader.getInstance().getProperty("tempus.mqtt.publishtopic"),new MqttMessage(("{\"sharedKeys\":\""+ApplicationConstants.CONFIG_PARAM+"\"}").getBytes()));
 
         } catch (Exception e) {
            status=Status.INVALID_SECURITY_INFO;
+           logger.error("Error Connecting Mqtt client: "+e.getMessage());
+            e.printStackTrace();
            return;
         }
         status=Status.CONNECTED;
@@ -71,4 +73,5 @@ public class MqttManager implements CommunicationManager{
         }
        status=Status.DISCONNECTED;
     }
+
 }

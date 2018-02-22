@@ -28,7 +28,8 @@ public class TempusMqttCallback implements MqttCallback{
     @Override
     public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
         logger.info("New message arrived");
-        String stringMsg=new String(mqttMessage.getPayload());
+        String stringMsg=new String(mqttMessage.getPayload()).replaceAll("\\\\n", "");
+        stringMsg=stringMsg.replaceAll("\\\\t","");
         logger.debug("Incomming message "+stringMsg);
         Gson gson = new Gson();
         JsonObject jsonConfig = gson.fromJson(stringMsg, com.google.gson.JsonObject.class);
@@ -50,4 +51,5 @@ public class TempusMqttCallback implements MqttCallback{
     public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
 
     }
+
 }

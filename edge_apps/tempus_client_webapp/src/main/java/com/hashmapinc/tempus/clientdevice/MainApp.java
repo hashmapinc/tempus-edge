@@ -19,6 +19,7 @@ public class MainApp {
         ApplicationContext.getContext().setCommunicationManager(mqttManager);
         if(deviceId!=null)
         {
+
             try {
                 mqttManager.start();
             } catch (Exception e) {

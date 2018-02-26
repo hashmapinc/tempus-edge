@@ -5,6 +5,7 @@ from iofog_container_sdk.client import IoFogClient, IoFogException
 from iofog_container_sdk.iomessage import IoMessage
 from iofog_container_sdk.listener import *
 from paho.mqtt import client
+from paho.mqtt.client import MQTT_ERR_SUCCESS
 from util import *
 
 clientLock = threading.Lock()
@@ -133,18 +134,35 @@ class MqttClient:
                     self.reconnect_timer.start()
 
     @staticmethod
-    def on_disconnect(self, client, userdata, rc):
+    def on_disconnect(client, userdata, rc):
         MqttClient.connected = False
+        print("MQTT Client disconnected.")
+
+        # if this disconnect unintentionall, begin reconnecting
+        # rc = MQTT_ERR_SUCCESS means disconnect() was called
+        if rc is not MQTT_ERR_SUCCESS:
+            print("Reconnecting...")
+            # attempt to reconnnect indefinitely
+            reconnStatus = client.reconnect()
+            while reconnStatus is not MQTT_ERR_SUCCESS:
+                print("Reconnection failed.")
+                print("Reconnecting...")
+                reconnStatus = client.reconnect()
+
+            # to get here, reconnection is successful
+            MqttClient.connected = True
+
+
 
     @staticmethod
-    def on_connect(self, client, userdata, rc):
+    def on_connect(client, userdata, flags, rc):
         if rc:
             print "Connection to broker refused. Error code is {}.".format(rc)
         else:
             MqttClient.connected = True
 
     @staticmethod
-    def on_message(self, client, userdata, msg):
+    def on_message(client, userdata, msg):
         io_mesage = IoMessage()
         io_mesage.infotype = MQTT_INFO_TYPE
         io_mesage.infoformat = MQTT_INFO_FORMAT

@@ -1,12 +1,5 @@
 target
-build
-**/.ensime_cache
-**/*.ensime
-**/*.ensime-langserver.log
-**/pc.stdout.log
 **/.classpath
 **/.project
 **/.settings
 **/.vscode
-cleanEnsime.sh
-deployImage.sh

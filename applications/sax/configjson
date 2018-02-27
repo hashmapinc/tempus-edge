@@ -1,0 +1,10 @@
+{
+  "saxConfiguration": [
+    {
+      "epsilon": "1e-6",
+      "alphabetSize": "5",
+      "wordSize": "6",
+      "batchFrequency": 3000
+    }
+  ]
+}

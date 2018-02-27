@@ -1,0 +1,179 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.hashmapinc</groupId>
+  <artifactId>opcClient</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <name>${project.artifactId}</name>
+  <description>ioFog edge application for converting iofog messages to opc writes and opc reads to iofog messages.</description>
+  <inceptionYear>2018</inceptionYear>
+
+
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <encoding>UTF-8</encoding>
+    <scala.version>2.12.4</scala.version>
+    <scala.compat.version>2.12</scala.compat.version>
+  </properties>
+
+
+  <dependencies>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.milo</groupId>
+      <artifactId>sdk-client</artifactId>
+      <version>0.2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.typesafe.scala-logging</groupId>
+      <artifactId>scala-logging_2.12</artifactId>
+      <version>3.7.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.25</version>
+    </dependency>
+    <dependency>
+      <groupId>com.iotracks</groupId>
+      <artifactId>container-java-sdk</artifactId>
+      <version>1.1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.typesafe.play</groupId>
+      <artifactId>play-json_2.12</artifactId>
+      <version>2.6.8</version>
+    </dependency>
+
+
+    <!-- Test -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.specs2</groupId>
+      <artifactId>specs2-core_${scala.compat.version}</artifactId>
+      <version>4.0.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.scalatest</groupId>
+      <artifactId>scalatest_${scala.compat.version}</artifactId>
+      <version>3.0.5</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+
+  <build>
+    <sourceDirectory>src/main/scala</sourceDirectory>
+    <testSourceDirectory>src/test/scala</testSourceDirectory>
+
+    <plugins>
+      <plugin>
+        <!-- see http://davidb.github.com/scala-maven-plugin -->
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+
+      <!-- disable surefire -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.7</version>
+        <configuration>
+          <skipTests>true</skipTests>
+        </configuration>
+      </plugin>
+      <!-- enable scalatest -->
+      <plugin>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-maven-plugin</artifactId>
+        <version>1.0</version>
+        <configuration>
+          <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+          <junitxml>.</junitxml>
+          <filereports>WDF TestSuite.txt</filereports>
+        </configuration>
+        <executions>
+          <execution>
+            <id>test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <!-- put your configurations here -->
+          <createDependencyReducedPom>false</createDependencyReducedPom>
+          <finalName>opcClient-uber</finalName>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+              <mainClass>com.hashmapinc.tempus.edge.opcClient.Driver</mainClass>
+            </transformer>
+          </transformers>
+          <!--artifactSet>
+            <excludes>
+              <exclude>com.iotracks</exclude>
+            </excludes>
+          </artifactSet-->
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/license/**</exclude>
+                <exclude>META-INF/*</exclude>
+                <exclude>META-INF/maven/**</exclude>
+                <exclude>LICENSE</exclude>
+                <exclude>NOTICE</exclude>
+                <exclude>/*.txt</exclude>
+                <exclude>build.properties</exclude>
+              </excludes>
+            </filter>
+          </filters>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

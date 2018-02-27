@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.hashmapinc</groupId>
-  <artifactId>opcMonitor</artifactId>
+  <artifactId>opcClient</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>${project.artifactId}</name>
-  <description>ioFog edge application for monitoring OPC servers and reporting to Tempus through MQTT</description>
+  <description>ioFog edge application for converting iofog messages to opc writes and opc reads to iofog messages.</description>
   <inceptionYear>2018</inceptionYear>
 
 
@@ -139,10 +139,10 @@
         <configuration>
           <!-- put your configurations here -->
           <createDependencyReducedPom>false</createDependencyReducedPom>
-          <finalName>opcMonitor-uber</finalName>
+          <finalName>opcClient-uber</finalName>
           <transformers>
             <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-              <mainClass>com.hashmapinc.opcMonitor.Monitor</mainClass>
+              <mainClass>com.hashmapinc.tempus.edge.opcClient.Driver</mainClass>
             </transformer>
           </transformers>
           <!--artifactSet>

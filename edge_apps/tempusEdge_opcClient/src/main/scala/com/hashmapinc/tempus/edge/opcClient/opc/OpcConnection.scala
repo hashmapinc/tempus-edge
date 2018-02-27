@@ -1,4 +1,4 @@
-package com.hashmapinc.opcMonitor.opc
+package com.hashmapinc.tempus.edge.opcClient.opc
 
 import java.io.File
 import java.util.Arrays
@@ -16,7 +16,7 @@ import org.eclipse.milo.opcua.stack.client.UaTcpStackClient
 
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.opcMonitor.Config
+import com.hashmapinc.tempus.edge.opcClient.Config
 
 object OpcConnection {
   private val logger = Logger(getClass())

@@ -1,4 +1,4 @@
-package com.hashmapinc.opcMonitor.iofog
+package com.hashmapinc.tempus.edge.opcClient.iofog
 
 import javax.json.JsonObject
 import play.api.libs.json.Json
@@ -6,7 +6,7 @@ import com.iotracks.api.listener.IOFogAPIListener
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.opcMonitor.{IofogConfig, Config}
+import com.hashmapinc.tempus.edge.opcClient.{IofogConfig, Config}
 
 /**
  * This object holds the async logic for handling iofog events

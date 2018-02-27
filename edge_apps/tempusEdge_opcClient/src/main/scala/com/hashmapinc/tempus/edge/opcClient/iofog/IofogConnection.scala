@@ -1,9 +1,9 @@
-package com.hashmapinc.opcMonitor.iofog
+package com.hashmapinc.tempus.edge.opcClient.iofog
 
 import com.iotracks.api.IOFogClient
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.opcMonitor.Config
+import com.hashmapinc.tempus.edge.opcClient.Config
 
 /**
  * This object creates and manages the iofog connection.

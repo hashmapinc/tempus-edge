@@ -1,4 +1,4 @@
-package com.hashmapinc.opcMonitor
+package com.hashmapinc.tempus.edge.opcClient
 
 import com.typesafe.scalalogging.Logger
 import play.api.libs.json.Json

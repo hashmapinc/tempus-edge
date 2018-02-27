@@ -1,15 +1,15 @@
-package com.hashmapinc.opcMonitor
+package com.hashmapinc.tempus.edge.opcClient
 
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.opcMonitor.iofog.{IofogConnection, IofogController}
+import com.hashmapinc.tempus.edge.opcClient.iofog.{IofogConnection, IofogController}
 
 /**
  * Driver for the overall OPC Monitoring process
  *
  * @author randypitcherii
  */
-object Monitor {
+object Driver {
   private val log = Logger(getClass())
 
   def main(

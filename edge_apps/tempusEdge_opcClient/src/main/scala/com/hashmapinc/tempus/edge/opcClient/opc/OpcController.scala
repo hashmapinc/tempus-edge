@@ -1,4 +1,4 @@
-package com.hashmapinc.opcMonitor.opc
+package com.hashmapinc.tempus.edge.opcClient.opc
 
 import com.typesafe.scalalogging.Logger
 

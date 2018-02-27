@@ -1,4 +1,4 @@
-package com.hashmapinc.opcMonitor
+package com.hashmapinc.tempus.edge.opcClient
 
 import org.scalatest.FlatSpec
 

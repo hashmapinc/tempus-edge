@@ -52,20 +52,16 @@ Standard message formatting should be used by all edge applications. The purpose
 - improve the ease of application debugging
 
 ### Message Types
-Each IoFog message should contain a `messageType` field that describes the type of the message. This value is a `byte` (8-bit) bitmap. The significance of each bit is detailed below:
+Each IoFog message should contain a `messageType` field that describes the type of the message. This value is a `byte` or `uint8` depending on the language. The significance of each value is detailed below:
 
-* `0b00000001` = general data message - used for standard data passing from element to element
-* `0b00000010` = config alert message - alerts applications to check for updated configuration.
-* `0b00000100` = update config message - used to submit new configs to the `track-manager`
-* `0b00001000` = not yet defined
-* `0b00010000` = not yet defined
-* `0b00100000` = not yet defined
-* `0b01000000` = not yet defined
-* `0b10000000` = not yet defined
+* `000` = undefined message - should not be used. This can indicate a message that didn't originate from a Hashmap application.
+* `001` = general data message - used for standard data passing from element to element
+* `002` = config alert message - alerts applications to check for updated configuration.
+* `003` = update config message - used to submit new configs to the `track-manager`
 
-NOTE: new message types will be defined here as new types are necessary. Please send a pull request if you'd like to suggest other types!
+NOTE: new message types will be defined here as new types become necessary. Please send a pull request if you'd like to suggest other types!
 
 ### Message Subtypes
-Usage of `messageSubtype` is still not fully decided. In general, a message subtype will be similar to a `messageType`. It will be a `byte` value conatining a bitmap. Each bit in a `messageSubtype` bitmap will have different significance depending on the message's `messageType`. Those standards will be defined here for each `messageType`. 
+Usage of `messageSubtype` is still not fully defined. In general, a message subtype will be similar to a `messageType`.
 
-NOTE: new message subtypes will be defined here as new subtypes are necessary. Please send a pull request if you'd like to suggest other subtypes!
+NOTE: new message subtypes will be defined here as new subtypes become necessary. Please send a pull request if you'd like to suggest other subtypes!

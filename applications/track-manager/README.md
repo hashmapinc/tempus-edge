@@ -21,17 +21,5 @@ Deploy this image to dockerhub and publish to ioFog. From there, the image can b
 
 Any configurations you need to make available to your track elements should be provided through ioAuthoring to this element.
 
-Make sure that you configure volume mounting using the following pattern:
-```json
-{"volumemappings": [
-  {"hostdestination": "/iofog/config/YOUR_TRACK_NAME", 
-   "containerdestination": "/mnt/config", 
-   "accessmode": "rw"}
-]}
-```
-
-NOTE: Do not forget to replace YOUR_TRACK_NAME with the name of your track. This allows multiple tracks to be configured on the same host without conflict.
-
-
 ## Help
 If you need any help, please reach out to [Randy Pitcher](https://github.com/randypitcherii).

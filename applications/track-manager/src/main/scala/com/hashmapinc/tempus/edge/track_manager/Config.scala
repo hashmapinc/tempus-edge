@@ -32,6 +32,10 @@ object Config {
   private val selfname = System.getenv("SELFNAME")
   val CONTAINER_ID = if(selfname == null) "" else selfname
 
+  // define message type
+  val CONFIG_ALERT_MSG:   Byte = 2
+  val UPDATE_CONFIG_MSG:  Byte = 3
+
   /**
    * This function updates the configs
    * 

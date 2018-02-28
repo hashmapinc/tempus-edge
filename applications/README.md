@@ -54,12 +54,18 @@ Standard message formatting should be used by all edge applications. The purpose
 ### Message Types
 Each IoFog message should contain a `messageType` field that describes the type of the message. This value is a `byte` (8-bit) bitmap. The significance of each bit is detailed below:
 
-* `0b00000001` = general data message
-* `0b00000010` = config message
+* `0b00000001` = general data message - used for standard data passing from element to element
+* `0b00000010` = config alert message - alerts applications to check for updated configuration.
+* `0b00000100` = update config message - used to submit new configs to the `track-manager`
+* `0b00001000` = not yet defined
+* `0b00010000` = not yet defined
+* `0b00100000` = not yet defined
+* `0b01000000` = not yet defined
+* `0b10000000` = not yet defined
 
 NOTE: new message types will be defined here as new types are necessary. Please send a pull request if you'd like to suggest other types!
 
 ### Message Subtypes
-Usage of `messageSubtype` is still undecided. In general, a message subtype will be similar to a `messageType`; it will be a `byte` value conatining a bitmap. Each bit in a `messageSubtype` bitmap will have different significance depending on the message's `messageType`. Those standards will be defined here for each `messageType`. 
+Usage of `messageSubtype` is still not fully decided. In general, a message subtype will be similar to a `messageType`. It will be a `byte` value conatining a bitmap. Each bit in a `messageSubtype` bitmap will have different significance depending on the message's `messageType`. Those standards will be defined here for each `messageType`. 
 
 NOTE: new message subtypes will be defined here as new subtypes are necessary. Please send a pull request if you'd like to suggest other subtypes!

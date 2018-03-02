@@ -7,7 +7,6 @@
   <description>ioFog edge application for managing track ID, external configs, and ioFog configs for a whole track.</description>
   <inceptionYear>2018</inceptionYear>
 
-
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -15,7 +14,6 @@
     <scala.version>2.12.4</scala.version>
     <scala.compat.version>2.12</scala.compat.version>
   </properties>
-
 
   <dependencies>
     <dependency>
@@ -43,7 +41,11 @@
       <artifactId>play-json_2.12</artifactId>
       <version>2.6.8</version>
     </dependency>
-
+    <dependency>
+      <groupId>com.thesamet.scalapb</groupId>
+      <artifactId>scalapb-runtime_2.12</artifactId>
+      <version>0.7.0-rc4</version>
+    </dependency>
 
     <!-- Test -->
     <dependency>
@@ -66,38 +68,96 @@
     </dependency>
   </dependencies>
 
-
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
-
     <plugins>
+      <!--==================================================================-->
+      <!-- Setup protobuf building -->
+      <!--==================================================================-->
+      <!-- Create the generated protobuf folder in target  -->
       <plugin>
-        <!-- see http://davidb.github.com/scala-maven-plugin -->
-        <groupId>net.alchim31.maven</groupId>
-        <artifactId>scala-maven-plugin</artifactId>
-        <version>3.3.1</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
         <executions>
           <execution>
+            <id>mkdir-generated-sources</id>
             <goals>
-              <goal>compile</goal>
-              <goal>testCompile</goal>
+              <goal>run</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
+              <target>
+                <mkdir dir="${project.build.directory}/generated-sources/protobuf" />
+              </target>
             </configuration>
           </execution>
         </executions>
       </plugin>
+      <!-- Add the generated folder as a source -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.3</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.12</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/protobuf</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
+      <!-- Compile the proto file(s) -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.5.0</version>
+        <executions>
+          <execution>
+            <id>generate-scala-protobuf-classes</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <mainClass>scalapb.ScalaPBC</mainClass>
+              <cleanupDaemonThreads>false</cleanupDaemonThreads>
+              <includePluginDependencies>true</includePluginDependencies>
+              <classpathScope>compile</classpathScope>
+              <executableDependency>
+                <groupId>com.thesamet.scalapb</groupId>
+                <artifactId>scalapbc_2.12</artifactId>
+              </executableDependency>
+              <arguments>
+                <argument>-v300</argument>
+                <argument>--throw</argument>
+                <argument>--proto_path=${project.basedir}/src/main/protobuf</argument>
+                <argument>--scala_out=${project.build.directory}/generated-sources/protobuf</argument>
+                <argument>${project.basedir}/src/main/protobuf/schemas.proto</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>com.thesamet.scalapb</groupId>
+            <artifactId>scalapbc_2.12</artifactId>
+            <version>0.7.0</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <!--==================================================================-->
 
+      <!--==================================================================-->
+      <!-- Configure testing -->
+      <!--==================================================================-->
       <!-- disable surefire -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -126,7 +186,42 @@
           </execution>
         </executions>
       </plugin>
+      <!--==================================================================-->
 
+      <!--==================================================================-->
+      <!-- Configure compilation -->
+      <!--==================================================================-->
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.3.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+              <args>
+                <arg>-dependencyfile</arg>
+                <arg>${project.build.directory}/.scala_dependencies</arg>
+              </args>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+      <!--==================================================================-->
+
+      <!-- setup package to generate an uber-jar -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>

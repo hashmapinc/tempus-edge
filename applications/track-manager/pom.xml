@@ -139,8 +139,12 @@
                 <argument>-v300</argument>
                 <argument>--throw</argument>
                 <argument>--proto_path=${project.basedir}/src/main/protobuf</argument>
-                <argument>--scala_out=${project.build.directory}/generated-sources/protobuf</argument>
-                <argument>${project.basedir}/src/main/protobuf/schemas.proto</argument>
+                <argument>--scala_out=flat_package:${project.build.directory}/generated-sources/protobuf</argument>
+                <argument>${project.basedir}/src/main/protobuf/MessageProtocols.proto</argument>                
+                <argument>${project.basedir}/src/main/protobuf/MessageTypes.proto</argument>                
+                <argument>${project.basedir}/src/main/protobuf/MqttConfig.proto</argument>                
+                <argument>${project.basedir}/src/main/protobuf/OpcConfig.proto</argument>                
+                <argument>${project.basedir}/src/main/protobuf/TrackConfig.proto</argument>
               </arguments>
             </configuration>
           </execution>

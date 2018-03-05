@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package com.hashmapinc.tempus.edge.track.proto;
+
+import "MqttConfig.proto";
+import "OpcConfig.proto";
+
+message TrackConfig {
+  MqttConfig mqtt_config = 1;
+  OpcConfig opc_config = 2;
+}

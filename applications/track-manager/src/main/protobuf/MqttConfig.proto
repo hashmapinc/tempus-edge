@@ -1,17 +1,6 @@
 syntax = "proto3";
 
-package com.hashmapinc.tempus.edge.messaging;
-
-// Define the configuration needed to work with OPC services.
-message OpcConfig {
-  string endpoint = 1; // endpoint to send opc traffic to
-  
-  // define the structure of security settings for opc connections
-  message Security {
-    string type = 1;
-  }
-  Security security = 2; // security settings to use
-}
+package com.hashmapinc.tempus.edge.track.proto;
 
 // Define the configuration needed to work with MQTT services.
 message MqttConfig {
@@ -32,7 +21,12 @@ message MqttConfig {
 
   // define the structure of security settings for opc connections
   message Security {
-    string type = 1;
+     // define available security types.
+    enum Type {
+      NONE = 0;
+      TOKEN = 1; // username = token, password = ' ' (1 space) | default tempus auth
+    }
+    Type type = 1;
   }
   Security security = 4;
 
@@ -42,9 +36,4 @@ message MqttConfig {
     string password = 2;
   }
   User user = 5; // user details to use when authenticating 
-}
-
-message TrackConfig {
-  OpcConfig opc_config = 1;
-  MqttConfig mqtt_config = 2;
 }

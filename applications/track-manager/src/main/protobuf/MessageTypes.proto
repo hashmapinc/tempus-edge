@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package com.hashmapinc.tempus.edge.track.proto;
+
+// Define byte values for describing tempus edge message types
+
+// Define config message types
+enum ConfigMessageTypes {
+  UPDATE_ALERT =    0;
+  UPDATE_COMMAND =  1;
+}
+
+// Define data message types
+enum DataMessageTypes {
+  PB_JSON = 0;
+  PB_MQTT = 1;
+  PB_OPC =  2;
+}

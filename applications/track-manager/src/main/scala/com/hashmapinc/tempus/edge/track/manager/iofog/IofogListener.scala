@@ -3,7 +3,6 @@ package com.hashmapinc.tempus.edge.track.manager.iofog
 import collection.JavaConverters._
 import javax.json.JsonObject
 
-import play.api.libs.json.Json
 import com.iotracks.api.listener.IOFogAPIListener
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
@@ -103,8 +102,9 @@ object IofogListener extends IOFogAPIListener {
     json: JsonObject
   ): Unit = {
     log.info("Received new config from iofog:" + json.toString)
-    log.warn("track-manager does not accept new config from iofog. Config is ignored.")
-    // do nothing with new configs.
+    
+    // merge new config with existing config, save configs, notify track of new config
+    IofogController.onNewIofogConfig(json)
   }
 
   /**
@@ -116,6 +116,6 @@ object IofogListener extends IOFogAPIListener {
   @Override
   def onNewConfigSignal: Unit = {
     log.info("Received new config signal")
-    // do nothing
+    IofogConnection.requestConfigs // this will send any new configs to the onNewConfig handler above.
   }
 }

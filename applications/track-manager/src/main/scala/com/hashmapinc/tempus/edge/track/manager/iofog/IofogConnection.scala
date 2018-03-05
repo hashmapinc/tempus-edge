@@ -24,5 +24,27 @@ object IofogConnection {
     } catch {
       case e: Exception => log.error("IoFog websocket error: " + e.toString)
     }
+    try {
+      client.openControlWebSocket(IofogListener)
+    } catch {
+      case e: Exception => log.error("IoFog websocket error: " + e.toString)
+    }
+  }
+
+  /**
+   * This function sends a configuration request to the iofog service
+   */
+  def requestConfigs: Unit = {
+    log.info("Requesting config from iofog...")
+    client.fetchContainerConfig(IofogListener)
+  }
+
+  /**
+   * This function sends a message to the iofog message queue notifying
+   * all listeners that there is a new track config.
+   */
+  def sendNewConfigAlert: Unit = {
+    log.info("Notifying track of new TrackConfig...")
+    // TODO: do this for real
   }
 }

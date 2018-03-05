@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.track_manager
+package com.hashmapinc.tempus.edge.track.manager
 
 import com.typesafe.scalalogging.Logger
 import play.api.libs.json.Json
@@ -31,10 +31,6 @@ object Config {
   // get container ID
   private val selfname = System.getenv("SELFNAME")
   val CONTAINER_ID = if(selfname == null) "" else selfname
-
-  // define message type
-  val CONFIG_ALERT_MSG:   Byte = 2
-  val UPDATE_CONFIG_MSG:  Byte = 3
 
   /**
    * This function updates the configs

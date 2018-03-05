@@ -1,12 +1,14 @@
-package com.hashmapinc.tempus.edge.track_manager.iofog
+package com.hashmapinc.tempus.edge.track.manager.iofog
 
+import collection.JavaConverters._
 import javax.json.JsonObject
+
 import play.api.libs.json.Json
 import com.iotracks.api.listener.IOFogAPIListener
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.track_manager.{IofogConfig, Config}
+import com.hashmapinc.tempus.edge.track.manager.{IofogConfig, Config}
 
 /**
  * This object dispatches IoFog events to the IofogController
@@ -24,7 +26,10 @@ object IofogListener extends IOFogAPIListener {
     messages: java.util.List[IOMessage]
   ): Unit = {
     log.info("Received " + messages.size.toString + " message(s)")
-    // do nothing with messages for now (this may change later)
+    // dispatch messages based on message types
+    messages.asScala.map((msg) => {
+      println(msg)
+    })
   }
 
   /**

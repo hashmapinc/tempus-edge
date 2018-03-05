@@ -1,8 +1,8 @@
-package com.hashmapinc.tempus.edge.track_manager
+package com.hashmapinc.tempus.edge.track.manager
 
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.track_manager.iofog.{IofogConnection, IofogController}
+import com.hashmapinc.tempus.edge.track.manager.iofog.{IofogConnection, IofogController}
 
 /**
  * Driver for the track manager

@@ -6,6 +6,7 @@ import "MqttConfig.proto";
 import "OpcConfig.proto";
 
 message TrackConfig {
-  MqttConfig mqtt_config = 1;
-  OpcConfig opc_config = 2;
+  string track_id = 1; // unique id given to this track. This comes from TEMPUS
+  MqttConfig mqtt_config = 2; // config used to connect to mqtt broker
+  OpcConfig opc_config = 3; // config used to connect to opc-ua endpoint
 }

@@ -6,13 +6,10 @@ package com.hashmapinc.tempus.edge.track.proto;
 message OpcConfig {
   string endpoint = 1; // endpoint to send opc traffic to
   
-  // define the structure of security settings for opc connections
-  message Security {
-    // define available security types. Currently none are suported.
-    enum Type {
-      NONE = 0;
-    }
-    Type type = 1;
+  // define available security types
+  enum SecurityType {
+    NONE = 0;
   }
-  Security security = 2; // security settings to use
+
+  SecurityType security_type = 2; // security settings to use
 }

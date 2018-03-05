@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package com.hashmapinc.tempus.edge.track.proto;
+package com.hashmapinc.tempus.edge.proto;
 
 // Define byte values for describing tempus edge message protocols
 enum MessageProtocols {

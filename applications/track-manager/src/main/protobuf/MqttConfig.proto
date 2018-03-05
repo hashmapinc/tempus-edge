@@ -19,21 +19,17 @@ message MqttConfig {
   }
   Broker broker = 3; // broker to connect to
 
-  // define the structure of security settings for opc connections
-  message Security {
-     // define available security types.
-    enum Type {
-      NONE = 0;
-      TOKEN = 1; // username = token, password = ' ' (1 space) | default tempus auth
-    }
-    Type type = 1;
+  // define available security types
+  enum SecurityType {
+    NONE = 0;
+    TOKEN = 1; // username = token, password = ' ' (1 space) | default tempus auth
   }
-  Security security = 4;
+  SecurityType security_type = 4;
 
   // define mqtt user
   message User {
     string username = 1;
     string password = 2;
   }
-  User user = 5; // user details to use when authenticating 
+  User user = 5; // user details when authenticating 
 }

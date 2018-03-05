@@ -93,4 +93,22 @@ object IofogController {
     // alert track of new configs
     IofogConnection.sendNewConfigAlert
   }
+
+  /**
+   * This function processes a new TrackConfig message from iofog
+   *
+   * @param newConfig - TrackConfig holding the new track config
+   */
+  def onNewConfigMessage(
+    newConfig: TrackConfig
+  ): Unit = {
+    // merge and save configs
+    this.synchronized {
+      val mergedConfig = mergeConfigs(loadTrackConfig, newConfig)
+      saveTrackConfig(mergedConfig)
+    }
+
+    // alert track of new configs
+    IofogConnection.sendNewConfigAlert
+  }
 }

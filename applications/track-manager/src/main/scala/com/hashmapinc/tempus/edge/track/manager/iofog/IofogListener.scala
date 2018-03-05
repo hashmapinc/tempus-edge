@@ -28,8 +28,29 @@ object IofogListener extends IOFogAPIListener {
     log.info("Received " + messages.size.toString + " message(s)")
     // dispatch messages based on message types
     messages.asScala.map((msg) => {
-      // TODO: Handle these for real
-      println(msg)
+      try {
+        // extract message protocol and type from contentData
+        val msgContent = msg.getContentData
+        val msgProtocol: Byte = msgContent(0) // first byte of content data = protocol
+        val msgType: Byte = msgContent(1) // second byte = type
+
+        // handle any messages with new configs 
+        val shouldHandle: Boolean = (
+          msgProtocol == MessageProtocols.CONFIG.value.toByte && 
+          msgType == ConfigMessageTypes.UPDATE_COMMAND.value.toByte
+        ) 
+
+        if (shouldHandle) {
+          // parse protobuff byte array from msg content (all bytes after the first two)
+          val newConfig = TrackConfig.parseFrom(msgContent.slice(2, msgContent.size))
+
+          //handle new config
+          IofogController.onNewConfigMessage(newConfig)
+        }
+
+      } catch {
+        case e: Exception => log.error("Error trying to parse iofog message: " + e)
+      }
     })
   }
 
@@ -47,7 +68,7 @@ object IofogListener extends IOFogAPIListener {
     messages: java.util.List[IOMessage]
   ): Unit = {
     log.info("Received " + messages.size.toString + " message(s) from query request")
-    // do nothing with messages for now (this may change later)
+    // do nothing
   }
 
   /**
@@ -60,6 +81,7 @@ object IofogListener extends IOFogAPIListener {
     throwable: Throwable
   ): Unit = {
     log.error(throwable.toString)
+    // do nothing
   }
 
   /**
@@ -72,6 +94,7 @@ object IofogListener extends IOFogAPIListener {
     error: String
   ): Unit = {
     log.error("Bad ioFog Request: " + error)
+    // do nothing
   }
 
   /**
@@ -87,13 +110,11 @@ object IofogListener extends IOFogAPIListener {
     timestamp: Long
   ): Unit = {
     log.info("Received message receipt for " + messageId)
+    // do nothing
   }
 
   /**
    * This function handles new configs
-   *
-   * This function is not currently wired to handle anything, so it should 
-   * never be called.
    * 
    * @param json - JsonObject holding new configs
    */
@@ -102,20 +123,27 @@ object IofogListener extends IOFogAPIListener {
     json: JsonObject
   ): Unit = {
     log.info("Received new config from iofog:" + json.toString)
-    
+
     // merge new config with existing config, save configs, notify track of new config
-    IofogController.onNewIofogConfig(json)
+    try {
+      IofogController.onNewIofogConfig(json)
+    } catch {
+      case e: Exception => log.error("Error while processing new ioFog config: " + e)
+    }
   }
 
   /**
    * This function handles new config signals.
-   *
-   * This function is not currently wired to handle anything, so it should 
-   * never be called.
    */
   @Override
   def onNewConfigSignal: Unit = {
     log.info("Received new config signal")
-    IofogConnection.requestConfigs // this will send any new configs to the onNewConfig handler above.
+
+    // send new configs to the onNewConfig handler above
+    try {
+      IofogConnection.requestConfigs
+    } catch {
+      case e: Exception => log.error("Error while handling new ioFog config signal: " + e)
+    }
   }
 }

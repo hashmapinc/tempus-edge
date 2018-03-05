@@ -1,7 +1,10 @@
 package com.hashmapinc.tempus.edge.track.manager.iofog
 
 import com.iotracks.api.IOFogClient
+import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
+
+import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes}
 
 /**
  * This object creates and manages the iofog connection.
@@ -45,6 +48,17 @@ object IofogConnection {
    */
   def sendNewConfigAlert: Unit = {
     log.info("Notifying track of new TrackConfig...")
-    // TODO: do this for real
+    
+    // create message content
+    val msgProtocol = MessageProtocols.CONFIG.value.toByte
+    val msgType = ConfigMessageTypes.UPDATE_ALERT.value.toByte
+    val msgContent = Array(msgProtocol, msgType)
+
+    // create message
+    val msg = new IOMessage
+    msg.setContentData(msgContent)
+
+    // send message
+    client.sendMessageToWebSocket(msg)
   }
 }

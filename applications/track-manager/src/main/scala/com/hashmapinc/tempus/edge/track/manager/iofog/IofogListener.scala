@@ -25,8 +25,8 @@ object IofogListener extends IOFogAPIListener {
     messages: java.util.List[IOMessage]
   ): Unit = {
     log.info("Received " + messages.size.toString + " message(s)")
-    // send messages to IofogController for dispatch
     try {
+      // send messages to IofogController for dispatch
       IofogController.onMessages(messages)
     } catch {
       case e: Exception => log.error("Error handling iofog messages: " + e)

@@ -1,6 +1,5 @@
 package com.hashmapinc.tempus.edge.track.manager.iofog
 
-import collection.JavaConverters._
 import javax.json.JsonObject
 
 import com.iotracks.api.listener.IOFogAPIListener
@@ -26,32 +25,12 @@ object IofogListener extends IOFogAPIListener {
     messages: java.util.List[IOMessage]
   ): Unit = {
     log.info("Received " + messages.size.toString + " message(s)")
-    // dispatch messages based on message types
-    messages.asScala.map((msg) => {
-      try {
-        // extract message protocol and type from contentData
-        val msgContent = msg.getContentData
-        val msgProtocol: Byte = msgContent(0) // first byte of content data = protocol
-        val msgType: Byte = msgContent(1) // second byte = type
-
-        // handle any messages with new configs 
-        val shouldHandle: Boolean = (
-          msgProtocol == MessageProtocols.CONFIG.value.toByte && 
-          msgType == ConfigMessageTypes.UPDATE_COMMAND.value.toByte
-        ) 
-
-        if (shouldHandle) {
-          // parse protobuff byte array from msg content (all bytes after the first two)
-          val newConfig = TrackConfig.parseFrom(msgContent.slice(2, msgContent.size))
-
-          //handle new config
-          IofogController.onNewConfigMessage(newConfig)
-        }
-
-      } catch {
-        case e: Exception => log.error("Error trying to parse iofog message: " + e)
-      }
-    })
+    // send messages to IofogController for dispatch
+    try {
+      IofogController.onMessages(messages)
+    } catch {
+      case e: Exception => log.error("Error handling iofog messages: " + e)
+    }
   }
 
   /**

@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.track_manager.iofog
+package com.hashmapinc.tempus.edge.track.manager.iofog
 
 import org.scalatest.FlatSpec
 

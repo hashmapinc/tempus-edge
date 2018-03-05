@@ -16,20 +16,20 @@ Configuration for each application will be managed by an instance of the `track-
 ### Configuration Volume Mapping
 The volume in each **application container** is accessible at:
 ```
-/mnt/config
+/mnt/config/config.pb
 ```
 
 The **host machine** where the ioFog agent is running will store shared configs at:
 ```
-/iofog/config/<YOUR_TRACK_NAME>
+/iofog/config/<YOUR_TRACK_NAME>/config.pb
 ```
 
-This allows multiple tracks to run on the same `fog` instance.
+This allows multiple tracks to run on the same `fog` host.
 
 The volume mapping from the **host machine** to each **application container** is performed in ioAuthoring on each element in the volume mappings section. The JSON that defines this volume mapping is:
 ```json
 {"volumemappings": [
-  {"hostdestination": "/iofog/config/YOUR_TRACK_NAME", 
+  {"hostdestination": "/iofog/config/<YOUR_TRACK_NAME>", 
    "containerdestination": "/mnt/config", 
    "accessmode": "rw"}
 ]}
@@ -38,10 +38,10 @@ The volume mapping from the **host machine** to each **application container** i
 ### Configuration Files
 Configurations are stored as `protobuf` files. The `track-manager` will store incoming configurations in the shared volume using the following convention:
 ```
-/mnt/config/<APPLICATION-NAME>/config.pb
+/mnt/config/<YOUR_TRACK_NAME>/config.pb
 ```
 
-When new configurations are available, the `track-manager` will send a config message to the track and each application will be responsible for updating their configs with the new `config.pb` contents.
+When new configurations are available, the `track-manager` will send a config protocol message to the track and each application will be responsible for updating their configs with the new `config.pb` contents.
 
 ## IoFog Messaging Standards
 Standard message formatting should be used by all edge applications. The purpose of standard message formatting is:
@@ -51,17 +51,29 @@ Standard message formatting should be used by all edge applications. The purpose
 - maintain flexibility for future edge application requirements
 - improve the ease of application debugging
 
-### Message Types
-Each IoFog message should contain a `messageType` field that describes the type of the message. This value is a `byte` or `uint8` depending on the language. The significance of each value is detailed below:
+### Message Protocol
+Each IoFog message should contain a `messageProtocol` byte that describes the kind of message being sent. This value is a `byte` or `uint8` depending on the language. It is the **first byte** in the messageContent field of the IoFog message. The significance of each value is detailed below:
 
-* `000` = undefined message - should not be used. This can indicate a message that didn't originate from a Hashmap application.
-* `001` = general data message - used for standard data passing from element to element
-* `002` = config alert message - alerts applications to check for updated configuration.
-* `003` = update config message - used to submit new configs to the `track-manager`
+Protocol Byte  | Protocol Name | Description
+------------- | ------------- | -------------
+`000`  | Undefined protocol | This can indicate a message that didn't originate from a Hashmap application. This is used to allow support for JSON-based messaging used in default ioFog elements.
+`001`  | Config protocol | describes messages relating to configurations. This is generally either commanding a receiving element to accept new configs or alerting elements that new configs are available.
+`002`  | Data protocol | used for standard data passing from element to element.
+
+NOTE: new message protocols will be defined here as new protocols become necessary. Please send a pull request if you'd like to suggest other protocols!
+
+### Message Type
+In general, a `messageType` will be similar to a `messageProtocol`. It will also be a `byte` value and will be the **second byte** in the ioFog message content field. The type will serve to further specify how to decode the incoming message content or further specify what action a container should take when receiving a message.
+
+The message types for each message protocol are defined below:
+
+Protocol Byte  | Type Byte | Name | Description
+------------- | ------------- | ------------- | -------------
+`000`  | `-` | not defined | -
+`001`  | `000` | Update alert | informs the receiver that new configs are available. The receiver is expected to update their own configs.
+`001`  | `001` | Config set | informs the receiver that a new track config is contained in this message and that the receiver should parse and persist the new track config. The `track-manager` is the intended consumer of this message type.
+`002`  | `000` | Protobuf'd JSON | used to define a message that is a protobuf byte array that will decode into a JSON string that will need to be parsed by the receiver.
+`002`  | `001` | MQTT message | used to define a message that is a protobuf byte array that will decode into an MQTT message. This message contains everything necessary for the `mqtt-client` to send this message in MQTT format.
+`002`  | `002` | OPC message | used to define a message that is a protobuf byte array that will decode into an OPC message. This message contains everything necessary for the `opc-client` to send this message in OPC format.
 
 NOTE: new message types will be defined here as new types become necessary. Please send a pull request if you'd like to suggest other types!
-
-### Message Subtypes
-Usage of `messageSubtype` is still not fully defined. In general, a message subtype will be similar to a `messageType`.
-
-NOTE: new message subtypes will be defined here as new subtypes become necessary. Please send a pull request if you'd like to suggest other subtypes!

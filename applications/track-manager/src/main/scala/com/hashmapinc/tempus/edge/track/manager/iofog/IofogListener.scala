@@ -8,7 +8,8 @@ import com.iotracks.api.listener.IOFogAPIListener
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.track.manager.{IofogConfig, Config}
+import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes}
+import com.hashmapinc.tempus.edge.track.proto.TrackConfig
 
 /**
  * This object dispatches IoFog events to the IofogController
@@ -28,6 +29,7 @@ object IofogListener extends IOFogAPIListener {
     log.info("Received " + messages.size.toString + " message(s)")
     // dispatch messages based on message types
     messages.asScala.map((msg) => {
+      // TODO: Handle these for real
       println(msg)
     })
   }
@@ -90,6 +92,9 @@ object IofogListener extends IOFogAPIListener {
 
   /**
    * This function handles new configs
+   *
+   * This function is not currently wired to handle anything, so it should 
+   * never be called.
    * 
    * @param json - JsonObject holding new configs
    */
@@ -97,21 +102,20 @@ object IofogListener extends IOFogAPIListener {
   def onNewConfig(
     json: JsonObject
   ): Unit = {
-    log.info("Parsing new config from iofog")
-    try {
-      val newConfig = Json.parse(json.toString).as[IofogConfig]
-      Config.update(newConfig)
-    } catch {
-      case e: Exception => log.error("onNewConfig error: " + e.toString)
-    }
+    log.info("Received new config from iofog:" + json.toString)
+    log.warn("track-manager does not accept new config from iofog. Config is ignored.")
+    // do nothing with new configs.
   }
 
   /**
-   * This function handles new config signals
+   * This function handles new config signals.
+   *
+   * This function is not currently wired to handle anything, so it should 
+   * never be called.
    */
   @Override
   def onNewConfigSignal: Unit = {
     log.info("Received new config signal")
-    IofogConnection.requestConfigs
+    // do nothing
   }
 }

@@ -15,12 +15,8 @@ object Driver {
   def main(
     args: Array[String]
   ): Unit = {
-    log.info("Starting Manager")
-
-    log.info("SELFNAME = " + System.getenv("SELFNAME"))
-    log.info("CONTAINERID = " + Config.CONTAINER_ID)
+    log.info("Starting track manager")
     
-    log.info("Connecting to iofog...")
     IofogConnection.connect
     log.info("iofog connection was successful. Listening...")
   }

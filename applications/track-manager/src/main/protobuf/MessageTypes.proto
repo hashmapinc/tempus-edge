@@ -2,17 +2,22 @@ syntax = "proto3";
 
 package com.hashmapinc.tempus.edge.proto;
 
+//=============================================================================
 // Define byte values for describing tempus edge message types
-
+//=============================================================================
 // Define config message types
 enum ConfigMessageTypes {
-  UPDATE_ALERT =    0;
-  UPDATE_COMMAND =  1;
+  UPDATE_ALERT = 0;               // alerts a container that new configs are available
+  TRACK_CONFIG_SUBMISSION = 1;    // submits a new track config to a container
+  TRACK_METADATA_SUBMISSION = 2;  // submits new track metadata to a container
+  MQTT_CONFIG_SUBMISSION = 3;     // submits new mqtt configs to a container
+  OPC_CONFIG_SUBMISSION = 4;      // submits new opc configs to a container
 }
 
 // Define data message types
 enum DataMessageTypes {
-  PB_JSON = 0;
-  PB_MQTT = 1;
-  PB_OPC =  2;
+  JSON = 0; // protobuf holding a JSON string
+  MQTT = 1; // protobuf holding an mqtt message
+  OPC =  2; // protobuf holding an opc message
 }
+//=============================================================================

@@ -5,6 +5,7 @@ import java.nio.file.{Files, Paths}
 
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
+import com.google.protobuf.InvalidProtocolBufferException
 
 import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes}
 import com.hashmapinc.tempus.edge.track.proto.{TrackConfig, TrackMetadata, MqttConfig, OpcConfig}
@@ -37,8 +38,16 @@ object IofogController {
     val configPath = Paths.get(pathToConfig)
 
     // load if config exists, return empty config if not
-    if (!Files.exists(configPath)) TrackConfig()
-    else TrackConfig.parseFrom(Files.readAllBytes(configPath))
+    try {
+      if (!Files.exists(configPath)) TrackConfig()
+      else TrackConfig.parseFrom(Files.readAllBytes(configPath))
+    } catch {
+      case e: InvalidProtocolBufferException => {
+        log.error("Could not parse saved config at " + pathToConfig)
+        log.error("Empty track config will be used instead...")
+        TrackConfig()
+      }
+    }
   }
 
   /**

@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package com.hashmapinc.tempus.edge.track.proto;
 
-import "Track.proto";
+import "TrackMetadata.proto";
 import "MqttConfig.proto";
 import "OpcConfig.proto";
 
 message TrackConfig {
-  Track track = 1; // metadata about the current track. This comes from TEMPUS
+  TrackMetadata track_metadata = 1; // metadata about the current track. This comes from TEMPUS
   MqttConfig mqtt_config = 2; // config used to connect to mqtt broker
   OpcConfig opc_config = 3; // config used to connect to opc-ua endpoint
 }

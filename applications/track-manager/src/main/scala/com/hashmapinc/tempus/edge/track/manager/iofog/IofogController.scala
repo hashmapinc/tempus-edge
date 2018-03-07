@@ -6,7 +6,7 @@ import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
 import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes}
-import com.hashmapinc.tempus.edge.track.proto.TrackConfig
+import com.hashmapinc.tempus.edge.track.proto.{TrackConfig, TrackMetadata, MqttConfig, OpcConfig}
 
 /**
  * This object holds the logic for handling iofog events
@@ -14,65 +14,129 @@ import com.hashmapinc.tempus.edge.track.proto.TrackConfig
 object IofogController {
   private val log = Logger(getClass())
 
+  // global vars
+  val PATH_TO_TRACK_CONFIG = "/mnt/config/config.pb"
+  val EMPTY_TRACK_CONFIG = Option.empty[TrackConfig]
+  val EMPTY_TRACK_METADATA = Option.empty[TrackMetadata]
+  val EMPTY_MQTT_CONFIG = Option.empty[MqttConfig]
+  val EMPTY_OPC_CONFIG = Option.empty[OpcConfig]
+
+
   /**
    * This function loads and returns the TrackConfig on disc if it exists
    *
+   * @param pathToConfig - String value holding path to the config.pb file
+   *
    * @return trackConfig - TrackConfig loaded from disc or None
    */
-  def loadTrackConfig(): TrackConfig = {
+  def loadTrackConfig(
+    pathToConfig: String
+  ): TrackConfig = {
     log.info("Loading track config...")
     // TODO: Do this for real
     TrackConfig()
   }
-
   /**
    * This function saves trackConfig to disc
    *
    * @param trackConfig - TrackConfig protobuf object containing new configs
+   * @param pathToConfig - String value holding path to the config.pb file
    */
   def saveTrackConfig(
-    trackConfig: TrackConfig
+    trackConfig: TrackConfig,
+    pathToConfig: String
   ): Unit = {
     log.info("Saving new track config.")
     // TODO: Do this for real
   }
 
   /**
-   * This function converts a json config into a proper TrackConfig protobuf 
+   * This function merges new configs onto an old config.
+   *
+   * If a newTrackConfig exists, it is used. If not, for every other new*Config
+   * passed to this method, that config component of the old config is overwritten.
+   *
+   * @param oldTrackConfig - TrackConfig protobuf object containing old configs
+   *
+   * @param newTrackConfig - TrackConfig protobuf object containing new configs
+   * @param newTrackMetadata - TrackMetadata protobuf object containing new track metadata
+   * @param newMqttConfig - MqttConfig protobuf object containing new mqtt configs
+   * @param newOpcConfig - OpcConfig protobuf object containing new opc configs
+   */
+  def mergeConfigs(
+    oldTrackConfig:   TrackConfig,
+  )(
+    newTrackConfig:   Option[TrackConfig],
+    newTrackMetadata: Option[TrackMetadata],
+    newMqttConfig:    Option[MqttConfig],
+    newOpcConfig:     Option[OpcConfig]
+  ): TrackConfig = {
+    log.info("Merging configs...")
+
+    // if there's a newTrackConfig, return it
+    if (!newTrackConfig.isEmpty) newTrackConfig.get
+    else { // no newTrackConfig; merge remaining configs
+      val mergedTrackMetadata = if(!newTrackMetadata.isEmpty) newTrackMetadata else oldTrackConfig.trackMetadata
+      val mergedMqttConfig = if(!newMqttConfig.isEmpty) newMqttConfig else oldTrackConfig.mqttConfig
+      val mergedOpcConfig = if(!newOpcConfig.isEmpty) newOpcConfig else oldTrackConfig.opcConfig
+      TrackConfig(mergedTrackMetadata, mergedMqttConfig, mergedOpcConfig)
+    }
+  }
+
+  /**
+   * This function converts a json config into a tuple of proper config protobufs
    *
    * @param json - JsonObject holding the new track config 
-   * @return newConfig - TrackConfig protobuf object with new track config
+   * @return newConfigs - Tuple containing parsed protobuf configs
    */
   def parseJsonConfig(
     json: javax.json.JsonObject
-  ): TrackConfig = {
-    log.info("Parsing new json configs as TrackConfig protobuf")
+  ): (
+    Option[TrackConfig], 
+    Option[TrackMetadata], 
+    Option[MqttConfig], 
+    Option[OpcConfig]
+  ) = {
+    log.info("Parsing new configs from JSON...")
 
     // parse json into TrackConfig protobuf object
     val newConfig = TrackConfig() // TODO: do this for real
     log.info("New TrackConfig: " + newConfig.toString)
 
-    newConfig
+    (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, EMPTY_MQTT_CONFIG, EMPTY_OPC_CONFIG)
   }
 
   /**
-   * This function merges a newConfig into an oldConfig. If newConfig does not
-   * define a field that oldConfig does, the field will be unchanged. If 
-   * newConfig does define a field, its value will be used in mergedConfig
+   * This function converts a json config into a tuple of proper config protobufs
    *
-   * @param oldConfig - TrackConfig protobuf object holding the starting config to merge into
-   * @param newConfig - TrackConfig protobuf object holding the new configs to merge
-   *
-   * @return mergedConfig - TrackConfig protobuf object holding the merged track configs
+   * @param msgContent - byte array containing iofog message content 
+   * @return newConfigs - Tuple containing parsed protobuf configs
    */
-  def mergeConfigs(
-    oldConfig: TrackConfig,
-    newConfig: TrackConfig
-  ): TrackConfig = {
-    log.info("Beginning config merge process...")
+  def parseConfigMessageContent(
+    msgContent: Array[Byte]
+  ): (
+    Option[TrackConfig], 
+    Option[TrackMetadata], 
+    Option[MqttConfig], 
+    Option[OpcConfig]
+  ) = {
+    log.info("Parsing new configs from config message content...")
 
-    // TODO: do this for real
-    TrackConfig()
+    // extract message type and payload
+    val msgType = msgContent(1)
+    val msgPayload = msgContent.slice(2, msgContent.size)
+
+    // parse and return configs tuple
+    if (msgType == ConfigMessageTypes.TRACK_CONFIG_SUBMISSION.value.toByte)
+      (Option(TrackConfig.parseFrom(msgPayload)), EMPTY_TRACK_METADATA, EMPTY_MQTT_CONFIG, EMPTY_OPC_CONFIG)
+    else if (msgType == ConfigMessageTypes.TRACK_METADATA_SUBMISSION.value.toByte)
+      (EMPTY_TRACK_CONFIG, Option(TrackMetadata.parseFrom(msgPayload)), EMPTY_MQTT_CONFIG, EMPTY_OPC_CONFIG)
+    else if (msgType == ConfigMessageTypes.MQTT_CONFIG_SUBMISSION.value.toByte)
+      (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, Option(MqttConfig.parseFrom(msgPayload)), EMPTY_OPC_CONFIG)
+    else if (msgType == ConfigMessageTypes.OPC_CONFIG_SUBMISSION.value.toByte)
+      (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, EMPTY_MQTT_CONFIG, Option(OpcConfig.parseFrom(msgPayload)))
+    else
+      (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, EMPTY_MQTT_CONFIG, EMPTY_OPC_CONFIG)
   }
 
   /**
@@ -83,13 +147,14 @@ object IofogController {
   def onNewIofogConfig(
     json: javax.json.JsonObject
   ): Unit = {
-    // parse config
-    val newConfig: TrackConfig = parseJsonConfig(json)
+    // parse json into tuple of configs
+    val parsedConfigs = parseJsonConfig(json)
 
     // merge and save configs
     this.synchronized {
-      val mergedConfig = mergeConfigs(loadTrackConfig, newConfig)
-      saveTrackConfig(mergedConfig)
+      val oldConfig = loadTrackConfig(PATH_TO_TRACK_CONFIG)
+      val mergedConfig = mergeConfigs(oldConfig) _ tupled parsedConfigs // this is scala black magic for de-tupling and calling mergeConfigs
+      saveTrackConfig(mergedConfig, PATH_TO_TRACK_CONFIG)
     }
 
     // alert track of new configs
@@ -97,25 +162,7 @@ object IofogController {
   }
 
   /**
-   * This function processes a new TrackConfig message from iofog
-   *
-   * @param newConfig - TrackConfig holding the new track config
-   */
-  def onNewConfigMessage(
-    newConfig: TrackConfig
-  ): Unit = {
-    // merge and save configs
-    this.synchronized {
-      val mergedConfig = mergeConfigs(loadTrackConfig, newConfig)
-      saveTrackConfig(mergedConfig)
-    }
-
-    // alert track of new configs
-    IofogConnection.sendNewConfigAlert
-  }
-
-  /**
-   * This function processes a new TrackConfig message from iofog
+   * This function processes new TrackConfig messages from iofog
    *
    * @param newConfig - TrackConfig holding the new track config
    */
@@ -125,19 +172,25 @@ object IofogController {
     // dispatch messages based on message types
     messages.asScala.map((msg) => {
       try {
-        // extract message protocol and type from contentData
+        // determine if message is a CONFIG message
         val msgContent = msg.getContentData
         val isConfigMsg = (msgContent(0) == MessageProtocols.CONFIG.value.toByte)
-        val isUpdateCommand = (msgContent(1) == ConfigMessageTypes.UPDATE_COMMAND.value.toByte)
 
-        // handle any UPDATE_COMMAND config messages
-        if (isConfigMsg && isUpdateCommand) {
-          // parse protobuff byte array from msg content (all bytes after the first two)
-          val rawProto = msgContent.slice(2, msgContent.size)
-          val newConfig = TrackConfig.parseFrom(rawProto)
-          //handle new config
-          onNewConfigMessage(newConfig)
-        }
+        // handle config messages
+        if (isConfigMsg) {
+          // parse configs into configs tuple
+          val newConfigs = parseConfigMessageContent(msgContent)
+
+          // update configs
+          this.synchronized {
+            val oldConfig = loadTrackConfig(PATH_TO_TRACK_CONFIG)
+            val mergedConfig = mergeConfigs(oldConfig) _ tupled newConfigs
+            saveTrackConfig(mergedConfig, PATH_TO_TRACK_CONFIG)
+          }
+
+          // alert track of new configs
+          IofogConnection.sendNewConfigAlert
+        } 
       } catch {
         case e: Exception => log.error("Error trying to parse iofog message: " + e)
       }

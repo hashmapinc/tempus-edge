@@ -1,6 +1,7 @@
 package com.hashmapinc.tempus.edge.track.manager.iofog
 
 import collection.JavaConverters._
+import java.nio.file.{Files, Paths}
 
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
@@ -32,13 +33,14 @@ object IofogController {
     pathToConfig: String
   ): TrackConfig = {
     log.info("Loading track config...")
-    // load Path
+    // create Path
     val configPath = Paths.get(pathToConfig)
 
     // load if config exists, return empty config if not
-    if (!Files.exists(configPath)) TrackConfig
-    else TrackConfig.parseFrom Files.readAllBytes(configPath)
+    if (!Files.exists(configPath)) TrackConfig()
+    else TrackConfig.parseFrom(Files.readAllBytes(configPath))
   }
+
   /**
    * This function saves trackConfig to disc
    *
@@ -49,8 +51,12 @@ object IofogController {
     trackConfig: TrackConfig,
     pathToConfig: String
   ): Unit = {
-    log.info("Saving new track config.")
-    // TODO: Do this for real
+    log.info("Saving track config...")
+    // create Path
+    val configPath = Paths.get(pathToConfig)
+
+    // write track config
+    Files.write(configPath, trackConfig.toByteArray) // default is to overwrite if exists
   }
 
   /**

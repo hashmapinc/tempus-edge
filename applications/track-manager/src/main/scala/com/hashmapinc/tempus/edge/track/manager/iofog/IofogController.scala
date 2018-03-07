@@ -135,8 +135,10 @@ object IofogController {
       (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, Option(MqttConfig.parseFrom(msgPayload)), EMPTY_OPC_CONFIG)
     else if (msgType == ConfigMessageTypes.OPC_CONFIG_SUBMISSION.value.toByte)
       (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, EMPTY_MQTT_CONFIG, Option(OpcConfig.parseFrom(msgPayload)))
-    else
+    else {
+      log.error("Could not parse config message of type {}", msgType)
       (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, EMPTY_MQTT_CONFIG, EMPTY_OPC_CONFIG)
+    }
   }
 
   /**

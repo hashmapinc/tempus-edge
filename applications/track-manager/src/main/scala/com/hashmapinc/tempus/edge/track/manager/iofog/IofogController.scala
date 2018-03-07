@@ -2,6 +2,7 @@ package com.hashmapinc.tempus.edge.track.manager.iofog
 
 import collection.JavaConverters._
 import java.nio.file.{Files, Paths}
+import scala.util.Try
 
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
@@ -102,6 +103,54 @@ object IofogController {
   }
 
   /**
+   * This function converts a json object into a TrackMetadata protobuf object Option
+   *
+   * This function is not exception handled. It is intended to be called inside
+   * of a scala.util.Try and handled appropriately by the caller.
+   *
+   * @param json - JsonObject holding the track metadata 
+   * @return newConfig - TrackMetadata object Option parsed from json
+   */
+  def jsonToTrackMetadata(
+    json: javax.json.JsonObject
+  ): Option[TrackMetadata] = {
+    log.info("Parsing track metadata from JSON...")
+    Option(TrackMetadata())
+  }
+
+  /**
+   * This function converts a json object into a MqttConfig protobuf object Option
+   *
+   * This function is not exception handled. It is intended to be called inside
+   * of a scala.util.Try and handled appropriately by the caller.
+   *
+   * @param json - JsonObject holding the opc config data 
+   * @return newConfig - MqttConfig object Option parsed from json
+   */
+  def jsonToMqttConfig(
+    json: javax.json.JsonObject
+  ): Option[MqttConfig] = {
+    log.info("Parsing mqtt config from JSON...")
+    Option(MqttConfig())
+  }
+
+  /**
+   * This function converts a json object into a OpcConfig protobuf object Option
+   *
+   * This function is not exception handled. It is intended to be called inside
+   * of a scala.util.Try and handled appropriately by the caller.
+   *
+   * @param json - JsonObject holding the track metadata 
+   * @return newConfig - OpcConfig object Option parsed from json
+   */
+  def jsonToOpcConfig(
+    json: javax.json.JsonObject
+  ): Option[OpcConfig] = {
+    log.info("Parsing opc config from JSON...")
+    Option(OpcConfig())
+  }
+
+  /**
    * This function converts a json config into a tuple of proper config protobufs
    *
    * @param json - JsonObject holding the new track config 
@@ -116,12 +165,13 @@ object IofogController {
     Option[OpcConfig]
   ) = {
     log.info("Parsing new configs from JSON...")
+    val baseConfig = TrackConfig() // add configs to this base
 
-    // parse json into TrackConfig protobuf object
-    val newConfig = TrackConfig() // TODO: do this for real
-    log.info("New TrackConfig: " + newConfig.toString)
+    val trackMetadata = Try(jsonToTrackMetadata(json)).getOrElse(None)
+    val mqttConfig =    Try(jsonToMqttConfig(json)).getOrElse(None)
+    val opcConfig =     Try(jsonToOpcConfig(json)).getOrElse(None)
 
-    (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, EMPTY_MQTT_CONFIG, EMPTY_OPC_CONFIG)
+    (EMPTY_TRACK_CONFIG, trackMetadata, mqttConfig, opcConfig)
   }
 
   /**

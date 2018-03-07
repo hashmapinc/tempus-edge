@@ -21,7 +21,6 @@ object IofogController {
   val EMPTY_MQTT_CONFIG = Option.empty[MqttConfig]
   val EMPTY_OPC_CONFIG = Option.empty[OpcConfig]
 
-
   /**
    * This function loads and returns the TrackConfig on disc if it exists
    *
@@ -33,8 +32,12 @@ object IofogController {
     pathToConfig: String
   ): TrackConfig = {
     log.info("Loading track config...")
-    // TODO: Do this for real
-    TrackConfig()
+    // load Path
+    val configPath = Paths.get(pathToConfig)
+
+    // load if config exists, return empty config if not
+    if (!Files.exists(configPath)) TrackConfig
+    else TrackConfig.parseFrom Files.readAllBytes(configPath)
   }
   /**
    * This function saves trackConfig to disc

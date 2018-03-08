@@ -1,0 +1,8 @@
+{ 
+  "trackMetadata": {
+    "trackName" : "my-track",
+    "trackId": 0,
+    "metadata": {"myMetadata": "meta"}
+  }
+}
+

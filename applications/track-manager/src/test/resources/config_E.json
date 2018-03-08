@@ -1,0 +1,28 @@
+{ 
+  "trackMetadata": {
+    "trackName" : "my-track",
+    "trackId": 0,
+    "metadata": {"myMetadata": "meta"}
+  },
+
+  "mqttConfig": {
+    "subscriptions": [{
+      "topic": "v1/devices/me/telemetry",
+      "qos": 2
+    }],
+    "publishers": [{
+      "topic": "v1/devices/me/telemetry",
+      "qos": 2
+    }],
+    "broker": {
+      "host": "192.168.1.183",
+      "port": 1883
+    },
+    "securityType": 0,
+    "user": {
+      "username": "ioFogToken",
+      "password": " "
+    }
+  }
+}
+

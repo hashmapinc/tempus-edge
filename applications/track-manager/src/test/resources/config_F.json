@@ -1,0 +1,13 @@
+{ 
+  "trackMetadata": {
+    "trackName" : "my-track",
+    "trackId": 0,
+    "metadata": {"myMetadata": "meta"}
+  },
+
+  "opcConfig": {
+    "endpoint": "opc.tcp://myHost:8080/myEndpoint",
+    "securityType": 0
+  }
+}
+

@@ -6,7 +6,41 @@ This scala application takes initial configs from ioFog and stores them in a sql
 As updated configurations come from ioFog and Tempus (through the mqtt client element), Track Manager updates the sqlite DB and sends newConfig messages to the iofog message queue. Other elements in the track are then responsible for handling new configs in response to this newConfig message. Most often, this will involve querying the sqlite DB through their volume mount (located in each container at /mnt/config).
 
 ## Expected IoFog Config
-No config JSON is expected for this element.
+The following config JSON shows the expected format for an IoFog Container configuration. Each root-level field is optional:
+```json
+{ 
+  "trackMetadata": {
+    "trackName" : "my-track",
+    "trackId": 0,
+    "metadata": {"myMetadata": "meta"}
+  },
+
+  "mqttConfig": {
+    "subscriptions": [{
+      "topic": "v1/devices/me/telemetry",
+      "qos": 2
+    }],
+    "publishers": [{
+      "topic": "v1/devices/me/telemetry",
+      "qos": 2
+    }],
+    "broker": {
+      "host": "192.168.1.183",
+      "port": 1883
+    },
+    "securityType": 0,
+    "user": {
+      "username": "ioFogToken",
+      "password": " "
+    }
+  },
+
+  "opcConfig": {
+    "endpoint": "opc.tcp://myHost:8080/myEndpoint",
+    "securityType": 0
+  }
+}
+```
 
 The following Volume Mappings config is expected for this element:
 ```json

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build -t tempus-edge:track-manager .
+docker build -t hashmapinc/tempus-edge-track-manager .

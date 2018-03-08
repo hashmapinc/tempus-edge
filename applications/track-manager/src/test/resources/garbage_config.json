@@ -1,0 +1,33 @@
+{ 
+  "trackfddfdssaMetadata": {
+    "asdffdsfdsads" : "my-track",
+    "trackId": 0,
+    "madsfetadata": {"myMetadata": "meta"}
+  },
+
+  "mqttfdsaasdfConfig": {
+    "subscriptions": [{
+      "topasdfdsfaic": "v1/devices/me/telemetry",
+      "qofdsadss": 2
+    }],
+    "publiasdfshers": [{
+      "topic": "v1/devices/me/telemetry",
+      "qos": 2
+    }],
+    "broker": {
+      "hoasdst": "192.168.1.183",
+      "poasdfrt": 1883
+    },
+    "securityType": 0,
+    "user": {
+      "useadsrname": "ioFogToken",
+      "pasasdfsadfsword": " "
+    }
+  },
+
+  "opcConfdasasdfdfsdsadfsfig": {
+    "endpoidnt": "opc.tcp://myHost:8080/myEndpoint",
+    "secuasdfrifasdtyType": 0
+  }
+}
+

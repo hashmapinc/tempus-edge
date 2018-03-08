@@ -1,0 +1,7 @@
+{ 
+  "opcConfig": {
+    "endpoint": "opc.tcp://myHost:8080/myEndpoint",
+    "securityType": 0
+  }
+}
+

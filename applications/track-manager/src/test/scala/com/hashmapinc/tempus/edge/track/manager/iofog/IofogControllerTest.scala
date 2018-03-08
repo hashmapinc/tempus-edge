@@ -200,8 +200,39 @@ class IofogControllerTest extends FlatSpec {
   //===========================================================================
   // test config parsing from protobuf byte arrays
   //===========================================================================
-  "parseConfigMessageContent" should "be testable" in {
-    assert(true)
+  // create sample protobuf arrays
+  val trackConfig_pb = TrackConfig.parseFrom(getClass.getResourceAsStream("/trackConfig.pb"))
+  val trackMetadata_pb = TrackMetadata.parseFrom(getClass.getResourceAsStream("/trackMetadata.pb"))
+  val mqttConfig_pb = MqttConfig.parseFrom(getClass.getResourceAsStream("/mqttConfig.pb"))
+  val opcConfig_pb = OpcConfig.parseFrom(getClass.getResourceAsStream("/opcConfig.pb"))
+
+  // create sample tempus edge message content arrays
+  val trackConfig_msgContent = MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.TRACK_CONFIG_SUBMISSION.value.toByte +: trackConfig_pb.toByteArray
+  val trackMetadata_msgContent = MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.TRACK_METADATA_SUBMISSION.value.toByte +: trackMetadata_pb.toByteArray
+  val mqttConfig_msgContent = MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.MQTT_CONFIG_SUBMISSION.value.toByte +: mqttConfig_pb.toByteArray
+  val opcConfig_msgContent = MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.OPC_CONFIG_SUBMISSION.value.toByte +: opcConfig_pb.toByteArray
+  val garbage_msgContent: Array[Byte] = "garbage".toCharArray.map(_.toByte)
+
+  "parseConfigMessageContent" should "properly parse protobufs from valid tempus edge message content" in {
+    val emptyConfig = TrackConfig()
+    val parsed_trackConfig = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(trackConfig_msgContent)
+    val parsed_trackMetadata = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(trackMetadata_msgContent)
+    val parsed_mqttConfig = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(mqttConfig_msgContent)
+    val parsed_opcConfig = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(opcConfig_msgContent)
+
+    assert(trackConfig_pb == parsed_trackConfig)
+    assert(trackMetadata_pb == parsed_trackMetadata.getTrackMetadata)
+    assert(mqttConfig_pb == parsed_mqttConfig.getMqttConfig)
+    assert(opcConfig_pb == parsed_opcConfig.getOpcConfig)
+  }
+  it should "gracefully ignore invalid tempus edge message content" in {
+    val emptyConfig = TrackConfig()
+    val parsedConfig_empty = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(garbage_msgContent)
+    assert(emptyConfig == parsedConfig_empty)
+
+    val fullConfig = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(trackConfig_msgContent)
+    val parsedConfig_full = IofogController.mergeConfigs(fullConfig) _ tupled IofogController.parseConfigMessageContent(garbage_msgContent)
+    assert(fullConfig == parsedConfig_full)
   }
   //===========================================================================
 }

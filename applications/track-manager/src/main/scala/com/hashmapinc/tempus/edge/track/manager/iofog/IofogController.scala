@@ -7,6 +7,7 @@ import scala.util.Try
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 import com.google.protobuf.InvalidProtocolBufferException
+import scalapb.json4s.JsonFormat
 
 import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes}
 import com.hashmapinc.tempus.edge.track.proto.{TrackConfig, TrackMetadata, MqttConfig, OpcConfig}
@@ -115,7 +116,8 @@ object IofogController {
     json: javax.json.JsonObject
   ): Option[TrackMetadata] = {
     log.info("Parsing track metadata from JSON...")
-    Option(TrackMetadata())
+    val trackMetadata = JsonFormat.fromJsonString[TrackMetadata](json.get("trackMetadata").toString)
+    Option(trackMetadata)
   }
 
   /**
@@ -131,7 +133,8 @@ object IofogController {
     json: javax.json.JsonObject
   ): Option[MqttConfig] = {
     log.info("Parsing mqtt config from JSON...")
-    Option(MqttConfig())
+    val mqttConfig = JsonFormat.fromJsonString[MqttConfig](json.get("mqttConfig").toString)
+    Option(mqttConfig)
   }
 
   /**
@@ -147,7 +150,8 @@ object IofogController {
     json: javax.json.JsonObject
   ): Option[OpcConfig] = {
     log.info("Parsing opc config from JSON...")
-    Option(OpcConfig())
+    val opcConfig = JsonFormat.fromJsonString[OpcConfig](json.get("opcConfig").toString)
+    Option(opcConfig)
   }
 
   /**

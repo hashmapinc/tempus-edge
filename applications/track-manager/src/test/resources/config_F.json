@@ -1,8 +1,8 @@
 { 
   "trackMetadata": {
-    "trackName" : "my-track",
+    "trackName": "my-track",
     "trackId": 0,
-    "metadata": {"myMetadata": "meta"}
+    "metadata": "{myMetadata: meta}"
   },
 
   "opcConfig": {

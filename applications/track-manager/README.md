@@ -12,7 +12,7 @@ The following config JSON shows the expected format for an IoFog Container confi
   "trackMetadata": {
     "trackName" : "my-track",
     "trackId": 0,
-    "metadata": {"myMetadata": "meta"}
+    "metadata": "{myMetadata: meta}" // this is a string holding dict of values, not a nested object!
   },
 
   "mqttConfig": {

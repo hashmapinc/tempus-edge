@@ -1,5 +1,5 @@
 FROM java:8-jre-alpine
 
-COPY target/opcClient-uber.jar /
+COPY target/opc-client-uber.jar /
 
-CMD ["java", "-jar", "/opcClient-uber.jar"]
+CMD ["java", "-jar", "/opc-client-uber.jar"]

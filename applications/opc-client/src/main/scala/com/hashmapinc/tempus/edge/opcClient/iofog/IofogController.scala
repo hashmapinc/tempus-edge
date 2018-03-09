@@ -1,17 +1,17 @@
 package com.hashmapinc.tempus.edge.opcClient.iofog
 
-import javax.json.JsonObject
-import play.api.libs.json.Json
-import com.iotracks.api.listener.IOFogAPIListener
+import collection.JavaConverters._
+
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.opcClient.{IofogConfig, Config}
+import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes, DataMessageTypes}
+import com.hashmapinc.tempus.edge.opcClient.Config
 
 /**
  * This object holds the async logic for handling iofog events
  */
-object IofogController extends IOFogAPIListener {
+object IofogController {
   private val log = Logger(getClass())
 
   /**
@@ -23,90 +23,37 @@ object IofogController extends IOFogAPIListener {
   def onMessages(
     messages: java.util.List[IOMessage]
   ): Unit = {
-    log.info("Received " + messages.size.toString + " message(s)")
-    // do nothing with messages for now (this may change later)
-  }
+    // handle messages based on message type
+    messages.asScala.map((msg) => {
+      try {
+        // determine if message is a CONFIG message
+        val msgContent  = msg.getContentData
+        val msgProtocol = msgContent(0) 
+        val msgType     = msgContent(1) 
 
-  /**
-   * Method is triggered when Container receives messages from Query request.
-   *
-   * @param timeframestart - time-frame start date of returned messages
-   * @param timeframeend - time-frame end date of returned messages
-   * @param messages - list of received messages
-   */
-  @Override
-  def onMessagesQuery(
-    timeframestart: Long, 
-    timeframeend: Long, 
-    messages: java.util.List[IOMessage]
-  ): Unit = {
-    log.info("Received " + messages.size.toString + " message(s) from query request")
-    // do nothing with messages for now (this may change later)
-  }
+        // handle config messages
+        if (msgProtocol == MessageProtocols.CONFIG.value.toByte) {
+          // handle config update alerts
+          if (msgType == ConfigMessageTypes.UPDATE_ALERT.value.toByte) 
+            Config.updateConfigs
+          else 
+            log.error("Could not handle message with protocol " + msgProtocol + " and type " + msgType)
+        
+        // handle data messages
+        } else if (msgProtocol == MessageProtocols.DATA.value.toByte) {
+          // handle opc data messages
+          if (msgType == DataMessageTypes.OPC.value.toByte) 
+            log.info("Received new OPC message type from iofog.")
+            // TODO: process new opc messages in the Opc Controller
+          else 
+            log.error("Could not handle message with protocol " + msgProtocol + " and type " + msgType)
 
-  /**
-   * This function logs any errors thrown by the parent class
-   * 
-   * @param throwable - Throwable describing the error that occurred
-   */
-  @Override
-  def onError(
-    throwable: Throwable
-  ): Unit = {
-    log.error(throwable.toString)
-  }
-
-  /**
-   * Method is triggered when Container receives BAD_REQUEST response from ioFog.
-   *
-   * @param error - error messages
-   */
-  @Override
-  def onBadRequest(
-    error: String
-  ): Unit = {
-    log.error("Bad ioFog Request: " + error)
-  }
-
-  /**
-   * This function handles onMessageReceipt events.
-   * Method is triggered when Container receives message's receipt.
-   *
-   * @param messageId - generated id of sent message
-   * @param timestamp - timestamp generated when message was received by ioFog
-   */
-  @Override
-  def onMessageReceipt(
-    messageId: String,
-    timestamp: Long
-  ): Unit = {
-    log.info("Received message receipt for " + messageId)
-  }
-
-  /**
-   * This function handles new configs
-   * 
-   * @param json - JsonObject holding new configs
-   */
-  @Override
-  def onNewConfig(
-    json: JsonObject
-  ): Unit = {
-    log.info("Parsing new config from iofog")
-    try {
-      val newConfig = Json.parse(json.toString).as[IofogConfig]
-      Config.update(newConfig)
-    } catch {
-      case e: Exception => log.error("onNewConfig error: " + e.toString)
-    }
-  }
-
-  /**
-   * This function handles new config signals
-   */
-  @Override
-  def onNewConfigSignal: Unit = {
-    log.info("Received new config signal")
-    IofogConnection.requestConfigs
+        // log that an unhandled message arrived.
+        } else 
+          log.error("Could not handle message with protocol " + msgProtocol + " and type " + msgType)
+      } catch {
+        case e: Exception => log.error("Error trying to parse iofog message: " + e)
+      }
+    })
   }
 }

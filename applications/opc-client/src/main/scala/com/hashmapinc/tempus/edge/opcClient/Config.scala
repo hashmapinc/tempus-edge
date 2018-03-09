@@ -1,21 +1,11 @@
 package com.hashmapinc.tempus.edge.opcClient
 
+import java.nio.file.{Files,Paths}
+import scala.util.Try
+
 import com.typesafe.scalalogging.Logger
-import play.api.libs.json.Json
 
-/**
- *  Case class for structuring incoming iofog JSON configurations.
- */
-case class IofogConfig(
-  // OPC configs 
-  opcEndpoint: String
-)
-object IofogConfig {
-  // define implicit config reader for json to case-class conversion
-  // https://www.playframework.com/documentation/2.6.x/ScalaJsonAutomated
-  implicit val iofConfigReader = Json.reads[IofogConfig]
-}
-
+import com.hashmapinc.tempus.edge.track.proto.{TrackConfig, OpcConfig}
 
 /**
  * This object is responsible for holding and updating opcMonitor configurations
@@ -23,61 +13,49 @@ object IofogConfig {
 object Config {
   private val log = Logger(getClass())
 
-  // Set default configs
-  log.info("Setting default configs")
-  var context = "production"
-  var iofogConfig: Option[IofogConfig] = None
+  // track config setup
+  val PATH_TO_TRACK_CONFIG = "/mnt/config/config.pb"
+  var trackConfig: Option[TrackConfig] = None
 
-  // get container ID
+  // container ID setup
   private val selfname = System.getenv("SELFNAME")
   val CONTAINER_ID = if(selfname == null) "" else selfname
 
   /**
-   * This function updates the configs
-   * 
-   * @param newConfig - IofogConfig case class object holding new config values
+   * This function updates the trackConfig
    */
-  def update(
-    newConfig: IofogConfig
-  ): Unit = {
-    log.info("Updating configs")
-    log.info("newConfig: " + newConfig.toString)
+  def updateConfigs: Unit = {
+    log.info("Attempting initial load of trackConfig from " + PATH_TO_TRACK_CONFIG)
 
     // update configs
-    this.synchronized {
-      context = "production"
-      iofogConfig = Option(newConfig)
-    }
+    trackConfig = loadConfigs(PATH_TO_TRACK_CONFIG)
   }
 
   /**
-   * This function sets the configs to test values
+   * This function loads track config and returns track config
    * 
-   * @param testConfig - IofogConfig instance with configuration to use
+   * @param configPath - string containing absolute path to track config protobuf file
+   *
+   * @return newConfig - Option[TrackConfig] object holding the config loaded from configPath
    */
-  def initTestContext(
-    testConfig: IofogConfig
-  ): Unit = {
-    log.info("Setting test configs")
-    log.info("testConfig: " + testConfig.toString)
-
-    // update configs
-    this.synchronized {
-      context = "test"
-      iofogConfig = Option(testConfig)
+  def loadConfigs(
+    configPath: String
+  ): Option[TrackConfig] = {
+    log.info("Loading new configs from " + configPath)
+    val rawProto = this.synchronized {
+      val loadPath = Paths.get(configPath)
+      Files.readAllBytes(loadPath)
     }
-  }
+    val newConfig: Option[TrackConfig] = Try(
+      Option(TrackConfig.parseFrom(rawProto))
+    ).getOrElse(None)
 
-  /**
-   * This function resets the configs to default values
-   */
-  def reset: Unit = {
-    log.info("Reseting configs")
-
-    // update configs
-    this.synchronized {
-      context = "production"
-      iofogConfig = None
-    }
+    // log results
+    if (newConfig.isEmpty)
+      log.warn("could not load trackConfig from " + configPath)
+    else 
+      log.info("New trackConfig loaded successfully: " + newConfig.toString)
+    
+    newConfig
   }
 }

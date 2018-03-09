@@ -25,7 +25,6 @@ object OpcConnection {
   var client = getUpdatedClient
   if (client isSuccess) logger.info("Successfully created client.")
   
-
   /**
    * Uses values in the Config object to create an opcUaClient configuration
    */
@@ -49,11 +48,11 @@ object OpcConnection {
     // endpoint configs
     //=========================================================================
     val endpoints= Try({
-      UaTcpStackClient.getEndpoints(Config.iofogConfig.get.opcEndpoint).get
+      UaTcpStackClient.getEndpoints(Config.trackConfig.get.getOpcConfig.endpoint).get
     }).recoverWith({
       case e: Exception => {
         // try the explicit discovery endpoint as well
-        val discoveryUrl = Config.iofogConfig.get.opcEndpoint + "/discovery"
+        val discoveryUrl = Config.trackConfig.get.getOpcConfig.endpoint + "/discovery"
         logger.info("Trying explicit discovery URL: {}", discoveryUrl)
         Success(UaTcpStackClient.getEndpoints(discoveryUrl).get)
       }

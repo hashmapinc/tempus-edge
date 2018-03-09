@@ -18,24 +18,21 @@ object IofogConnection {
    */
   def requestConfigs: Unit = {
     log.info("Requesting config from iofog...")
-    client.fetchContainerConfig(IofogController)
+    client.fetchContainerConfig(IofogListener)
   }
   
   /**
    * This function connects the web socket logic to the web socket events
    */
   def connect: Unit = {
-    //get initial config
-    requestConfigs
-
     log.info("Creating iofog connection")
     try {
-      client.openMessageWebSocket(IofogController)
+      client.openMessageWebSocket(IofogListener)
     } catch {
       case e: Exception => log.error("IoFog websocket error: " + e.toString)
     }
     try {
-      client.openControlWebSocket(IofogController)
+      client.openControlWebSocket(IofogListener)
     } catch {
       case e: Exception => log.error("IoFog websocket error: " + e.toString)
     }

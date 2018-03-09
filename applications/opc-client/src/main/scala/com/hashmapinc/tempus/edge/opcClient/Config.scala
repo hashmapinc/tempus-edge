@@ -22,9 +22,9 @@ object Config {
   val CONTAINER_ID = if(selfname == null) "" else selfname
 
   /**
-   * This function performs the initialization of Config
+   * This function updates the trackConfig
    */
-  def init: Unit = {
+  def updateConfigs: Unit = {
     log.info("Attempting initial load of trackConfig from " + PATH_TO_TRACK_CONFIG)
 
     // update configs

@@ -20,7 +20,7 @@ object Driver {
     log.info("SELFNAME = " + System.getenv("SELFNAME"))
     log.info("CONTAINERID = " + Config.CONTAINER_ID)
 
-    Config.init
+    Config.updateConfigs
     
     log.info("Connecting to iofog...")
     IofogConnection.connect

@@ -44,10 +44,10 @@ object Config {
     log.info("Loading new configs from " + configPath)
     val rawProto = this.synchronized {
       val loadPath = Paths.get(configPath)
-      Files.readAllBytes(loadPath)
+      Try(Files.readAllBytes(loadPath))
     }
     val newConfig: Option[TrackConfig] = Try(
-      Option(TrackConfig.parseFrom(rawProto))
+      Option(TrackConfig.parseFrom(rawProto.get))
     ).getOrElse(None)
 
     // log results

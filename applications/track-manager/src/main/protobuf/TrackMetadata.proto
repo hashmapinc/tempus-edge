@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package com.hashmapinc.tempus.edge.track.proto;
-
-message TrackMetadata {
-  string track_name = 1; // track name.
-  uint32 track_id = 2; // unique track id
-  string metadata = 3; // JSON holding metadata about the track. This should be updated to a defined schema in the future
-}

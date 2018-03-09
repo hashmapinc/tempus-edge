@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.hashmapinc.tempus.edge</groupId>
   <artifactId>track-manager</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.1.0</version>
   <name>${project.artifactId}</name>
   <description>ioFog edge application for managing track ID, external configs, and ioFog configs for a whole track.</description>
   <inceptionYear>2018</inceptionYear>
@@ -37,9 +37,9 @@
       <version>1.1.3</version>
     </dependency>
     <dependency>
-      <groupId>com.thesamet.scalapb</groupId>
-      <artifactId>scalapb-runtime_2.12</artifactId>
-      <version>0.7.0-rc4</version>
+      <groupId>com.hashmapinc.tempus.edge</groupId>
+      <artifactId>protos</artifactId>
+      <version>0.1.0</version>
     </dependency>
     <dependency>
       <groupId>com.thesamet.scalapb</groupId>
@@ -72,94 +72,6 @@
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
     <plugins>
-      <!--==================================================================-->
-      <!-- Setup protobuf building -->
-      <!--==================================================================-->
-      <!-- Create the generated protobuf folder in target  -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.8</version>
-        <executions>
-          <execution>
-            <id>mkdir-generated-sources</id>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <target>
-                <mkdir dir="${project.build.directory}/generated-sources/protobuf" />
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <!-- Add the generated folder as a source -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.12</version>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${project.build.directory}/generated-sources/protobuf</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <!-- Compile the proto file(s) -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.5.0</version>
-        <executions>
-          <execution>
-            <id>generate-scala-protobuf-classes</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <mainClass>scalapb.ScalaPBC</mainClass>
-              <cleanupDaemonThreads>false</cleanupDaemonThreads>
-              <includePluginDependencies>true</includePluginDependencies>
-              <classpathScope>compile</classpathScope>
-              <executableDependency>
-                <groupId>com.thesamet.scalapb</groupId>
-                <artifactId>scalapbc_2.12</artifactId>
-              </executableDependency>
-              <arguments>
-                <argument>-v300</argument>
-                <argument>--throw</argument>
-                <argument>--proto_path=${project.basedir}/src/main/protobuf</argument>
-                <argument>--scala_out=flat_package:${project.build.directory}/generated-sources/protobuf</argument>
-                <argument>${project.basedir}/src/main/protobuf/MessageProtocols.proto</argument>
-                <argument>${project.basedir}/src/main/protobuf/MessageTypes.proto</argument>      
-                <argument>${project.basedir}/src/main/protobuf/TrackMetadata.proto</argument>
-                <argument>${project.basedir}/src/main/protobuf/MqttConfig.proto</argument>
-                <argument>${project.basedir}/src/main/protobuf/OpcConfig.proto</argument>
-                <argument>${project.basedir}/src/main/protobuf/TrackConfig.proto</argument>
-              </arguments>
-            </configuration>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>com.thesamet.scalapb</groupId>
-            <artifactId>scalapbc_2.12</artifactId>
-            <version>0.7.0</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-      <!--==================================================================-->
-
       <!--==================================================================-->
       <!-- Configure testing -->
       <!--==================================================================-->
@@ -226,7 +138,9 @@
       </plugin>
       <!--==================================================================-->
 
+      <!--==================================================================-->
       <!-- setup package to generate an uber-jar -->
+      <!--==================================================================-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -264,6 +178,30 @@
           </execution>
         </executions>
       </plugin>
+      <!--==================================================================-->
+
+      <!--==================================================================-->
+      <!-- Configure dockerfile plugin -->
+      <!--==================================================================-->
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>dockerfile-maven-plugin</artifactId>
+        <version>1.3.6</version>
+        <executions>
+          <execution>
+            <id>default</id>
+            <goals>
+              <goal>build</goal>
+              <goal>push</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <repository>hashmapinc/tempus-edge-track-manager</repository>
+          <tag>${project.version}</tag>
+        </configuration>
+      </plugin>
+      <!--==================================================================-->
     </plugins>
   </build>
 </project>

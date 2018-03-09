@@ -25,9 +25,6 @@ object IofogConnection {
    * This function connects the web socket logic to the web socket events
    */
   def connect: Unit = {
-    //get initial config
-    requestConfigs
-
     log.info("Creating iofog connection")
     try {
       client.openMessageWebSocket(IofogController)

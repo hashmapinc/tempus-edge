@@ -1,12 +1,12 @@
 package com.hashmapinc.tempus.edge.opcClient.iofog
 
 import javax.json.JsonObject
-import play.api.libs.json.Json
+
 import com.iotracks.api.listener.IOFogAPIListener
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.opcClient.{IofogConfig, Config}
+import com.hashmapinc.tempus.edge.opcClient.Config
 
 /**
  * This object holds the async logic for handling iofog events
@@ -92,13 +92,8 @@ object IofogController extends IOFogAPIListener {
   def onNewConfig(
     json: JsonObject
   ): Unit = {
-    log.info("Parsing new config from iofog")
-    try {
-      val newConfig = Json.parse(json.toString).as[IofogConfig]
-      Config.update(newConfig)
-    } catch {
-      case e: Exception => log.error("onNewConfig error: " + e.toString)
-    }
+    log.warn("New config received! This container does not process configuration from iofog")
+    log.warn("Iofog config is: " + json)
   }
 
   /**

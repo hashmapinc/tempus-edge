@@ -74,7 +74,7 @@ object IofogController {
     } else if (msgProtocol == MessageProtocols.DATA.value.toByte) {
       if (msgType == DataMessageTypes.JSON.value.toByte) {
         log.error("Cannot convert UPDATE_ALERT CONFIG messages to JSON. Skipping this message...")
-        val pb = TrackConfig.parseFrom(rawProto)
+        val pb = JsonDataMessage.parseFrom(rawProto)
         val jsonString = JsonFormat.toJsonString(pb)
         Option(jsonString.toArray.map(_.toByte))
       } else {

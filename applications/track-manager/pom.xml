@@ -4,7 +4,7 @@
   <artifactId>track-manager</artifactId>
   <version>0.1.0</version>
   <name>${project.artifactId}</name>
-  <description>ioFog edge application for managing track ID, external configs, and ioFog configs for a whole track.</description>
+  <description>Tempus Edge application for managing track ID, external configs, and ioFog configs for a whole track.</description>
   <inceptionYear>2018</inceptionYear>
 
   <properties>

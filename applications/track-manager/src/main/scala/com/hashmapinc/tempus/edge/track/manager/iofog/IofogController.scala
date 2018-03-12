@@ -236,9 +236,9 @@ object IofogController {
   }
 
   /**
-   * This function processes new TrackConfig messages from iofog
+   * This function processes new iofog messages from the IofogListener
    *
-   * @param newConfig - TrackConfig holding the new track config
+   * @param messages - list of IOMessages from IofogListener
    */
   def onMessages(
     messages: java.util.List[IOMessage]

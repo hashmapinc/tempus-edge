@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package com.hashmapinc.tempus.edge.proto;
+
+//=============================================================================
+// Define protobuf wrapper for json strings
+//=============================================================================
+message JsonDataMessage {
+  string json = 1; // json string
+}
+//=============================================================================

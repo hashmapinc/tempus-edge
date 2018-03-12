@@ -57,14 +57,9 @@ The following Volume Mappings config is expected for this element:
 Do not forget to update <YOUR_TRACK_NAME> and make sure that all elements in this track have this same volume mapping config to ensure configs can be shared between containers.
 
 ## Building
-Build the project using:
+Build the project and docker image using:
 ```bash
 mvn package
-``` 
-
-Build the docker image using:
-```bash
-sh buildDockerImage.sh
 ```
 
 ## Usage

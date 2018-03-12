@@ -1,9 +1,9 @@
 # Track Manager
 This edge application is core to Tempus Edge. It is the "brain" that allows for seamless control of individual tracks within a fog from both ioFog and Tempus.
 
-This scala application takes initial configs from ioFog and stores them in a sqlite DB. This DB is accessible to all track elements through a shared volume (mounted at /iofog/config/< track-name > on the host).
+This scala application takes initial configs from ioFog and stores them as a protobuf file. This file is accessible to all track elements through a shared volume (mounted at /iofog/config/<YOUR_TRACK_NAME> on the host).
 
-As updated configurations come from ioFog and Tempus (through the mqtt client element), Track Manager updates the sqlite DB and sends newConfig messages to the iofog message queue. Other elements in the track are then responsible for handling new configs in response to this newConfig message. Most often, this will involve querying the sqlite DB through their volume mount (located in each container at /mnt/config).
+As updated configurations come from ioFog and Tempus (through the mqtt client element), Track Manager updates the protobuf config file and sends newConfig messages to the iofog message queue. Other elements in the track are then responsible for handling new configs in response to this newConfig message. Most often, this will involve loading configs from the protobuf file.
 
 ## Expected IoFog Config
 The following config JSON shows the expected format for an IoFog Container configuration. Each root-level field is optional:

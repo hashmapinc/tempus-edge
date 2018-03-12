@@ -11,9 +11,18 @@ import com.hashmapinc.tempus.edge.track.proto._
 
 class IofogControllerTest extends FlatSpec {
   //===========================================================================
-  // test track config saving and loading from disk
+  // test json to protobuf conversion
   //===========================================================================
   "jsonToProtobuf" should "be testable" in {
+    // check that test config file does not exist
+    assert(true)
+  }
+  //===========================================================================
+
+  //===========================================================================
+  // test protobuf to json conversion
+  //===========================================================================
+  "protobufToJson" should "be testable" in {
     // check that test config file does not exist
     assert(true)
   }

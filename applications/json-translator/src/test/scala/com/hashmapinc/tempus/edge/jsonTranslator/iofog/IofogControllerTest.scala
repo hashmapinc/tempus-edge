@@ -1,11 +1,9 @@
 package com.hashmapinc.tempus.edge.jsonTranslator.iofog
 
-import java.nio.file.{Paths, Files}
 import java.io.StringReader
 import javax.json.Json
 
 import org.scalatest.FlatSpec
-import scalapb.json4s.JsonFormat
 
 import com.hashmapinc.tempus.edge.proto._
 import com.hashmapinc.tempus.edge.track.proto._

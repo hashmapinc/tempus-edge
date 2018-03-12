@@ -28,42 +28,43 @@ class IofogControllerTest extends FlatSpec {
   //===========================================================================
   // test json to protobuf conversion
   //===========================================================================
-  "protobufToJson" should "properly convert tempus edge message contents into json byte arrays" in {
-    assert(true)
+  "jsonToProtobuf" should "properly convert tempus edge message contents into json byte arrays" in {
+    val convertedPB = IofogController.jsonToProtobuf("{\"a\": 3}")
+    assert(convertedPB == jsonData_pb)
   }
   //===========================================================================
 
   //===========================================================================
   // test protobuf to json conversion
   //===========================================================================
-  "protobufToJson" should "be testable" in {
+  "protobufToJson" should "properly convert tempus edge message contents into json byte arrays" in {
     // get converted json from config protocol messages
-    val updateAlert_jsonPB = IofogController.protobufToJson(Array(MessageProtocols.CONFIG.value.toByte,ConfigMessageTypes.UPDATE_ALERT.value.toByte))
-    val trackConfig_jsonPB = IofogController.protobufToJson(MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.TRACK_CONFIG_SUBMISSION.value.toByte +: trackConfig_pb.toByteArray)
-    val trackMetadata_jsonPB = IofogController.protobufToJson(MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.TRACK_METADATA_SUBMISSION.value.toByte +: trackMetadata_pb.toByteArray)
-    val mqttConfig_jsonPB = IofogController.protobufToJson(MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.MQTT_CONFIG_SUBMISSION.value.toByte +: mqttConfig_pb.toByteArray)
-    val opcConfig_jsonPB = IofogController.protobufToJson(MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.OPC_CONFIG_SUBMISSION.value.toByte +: opcConfig_pb.toByteArray)
+    val updateAlert_json = IofogController.protobufToJson(Array(MessageProtocols.CONFIG.value.toByte,ConfigMessageTypes.UPDATE_ALERT.value.toByte))
+    val trackConfig_json = IofogController.protobufToJson(MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.TRACK_CONFIG_SUBMISSION.value.toByte +: trackConfig_pb.toByteArray)
+    val trackMetadata_json = IofogController.protobufToJson(MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.TRACK_METADATA_SUBMISSION.value.toByte +: trackMetadata_pb.toByteArray)
+    val mqttConfig_json = IofogController.protobufToJson(MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.MQTT_CONFIG_SUBMISSION.value.toByte +: mqttConfig_pb.toByteArray)
+    val opcConfig_json = IofogController.protobufToJson(MessageProtocols.CONFIG.value.toByte +: ConfigMessageTypes.OPC_CONFIG_SUBMISSION.value.toByte +: opcConfig_pb.toByteArray)
 
     // get converted json from data protocol messages
-    val jsonData_jsonPB = IofogController.protobufToJson(MessageProtocols.DATA.value.toByte +: DataMessageTypes.JSON.value.toByte +: jsonData_pb.toByteArray)
+    val jsonData_json = IofogController.protobufToJson(MessageProtocols.DATA.value.toByte +: DataMessageTypes.JSON.value.toByte +: jsonData_pb.toByteArray)
 
     // get garbage
-    val garbageConfig_jsonPB = IofogController.protobufToJson(MessageProtocols.CONFIG.value.toByte +: 99.toByte +: trackConfig_pb.toByteArray)
-    val garbageData_jsonPB = IofogController.protobufToJson(MessageProtocols.DATA.value.toByte +: 99.toByte +: trackConfig_pb.toByteArray)
-    val garbage_jsonPB = IofogController.protobufToJson(99.toByte +: 99.toByte +: trackConfig_pb.toByteArray)
+    val garbageConfig_json = IofogController.protobufToJson(MessageProtocols.CONFIG.value.toByte +: 99.toByte +: trackConfig_pb.toByteArray)
+    val garbageData_json = IofogController.protobufToJson(MessageProtocols.DATA.value.toByte +: 99.toByte +: trackConfig_pb.toByteArray)
+    val garbage_json = IofogController.protobufToJson(99.toByte +: 99.toByte +: trackConfig_pb.toByteArray)
 
     // check that return arrays do or do not exist as expected
-    assert(updateAlert_jsonPB.isEmpty)
-    assert(!trackConfig_jsonPB.isEmpty)
-    assert(!trackMetadata_jsonPB.isEmpty)
-    assert(!mqttConfig_jsonPB.isEmpty)
-    assert(!opcConfig_jsonPB.isEmpty)
+    assert(updateAlert_json.isEmpty)
+    assert(!trackConfig_json.isEmpty)
+    assert(!trackMetadata_json.isEmpty)
+    assert(!mqttConfig_json.isEmpty)
+    assert(!opcConfig_json.isEmpty)
     
-    assert(!jsonData_jsonPB.isEmpty)
+    assert(!jsonData_json.isEmpty)
 
-    assert(garbageConfig_jsonPB.isEmpty)
-    assert(garbageData_jsonPB.isEmpty)
-    assert(garbage_jsonPB.isEmpty)
+    assert(garbageConfig_json.isEmpty)
+    assert(garbageData_json.isEmpty)
+    assert(garbage_json.isEmpty)
   }
   //===========================================================================
 }

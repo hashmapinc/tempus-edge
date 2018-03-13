@@ -15,7 +15,7 @@ object Driver {
   def main(
     args: Array[String]
   ): Unit = {
-    log.info("Starting track manager")
+    log.info("Starting edge application driver...")
     
     IofogConnection.connect
     log.info("iofog connection was successful. Listening...")

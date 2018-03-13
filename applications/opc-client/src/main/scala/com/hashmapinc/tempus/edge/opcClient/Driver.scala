@@ -15,7 +15,7 @@ object Driver {
   def main(
     args: Array[String]
   ): Unit = {
-    log.info("Starting Monitor")
+    log.info("Starting edge application driver...")
 
     log.info("SELFNAME = " + System.getenv("SELFNAME"))
     log.info("CONTAINERID = " + Config.CONTAINER_ID)

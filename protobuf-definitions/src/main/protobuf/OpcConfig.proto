@@ -10,6 +10,12 @@ message OpcConfig {
   enum SecurityType {
     NONE = 0;
   }
-
   SecurityType security_type = 2; // security settings to use
+
+  // define tag filter criteria
+  message TagFilters {
+    repeated string whitelist = 1;
+    repeated string blacklist = 2;
+  }
+  TagFilters tag_filters = 3;
 }

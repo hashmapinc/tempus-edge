@@ -5,7 +5,7 @@ import com.typesafe.scalalogging.Logger
 import com.hashmapinc.tempus.edge.opcClient.iofog.{IofogConnection, IofogController}
 
 /**
- * Driver for the overall OPC Monitoring process
+ * Driver for the overall edge application
  *
  * @author randypitcherii
  */

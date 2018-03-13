@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.Logger
 import com.hashmapinc.tempus.edge.track.proto.{TrackConfig, OpcConfig}
 
 /**
- * This object is responsible for holding and updating opcMonitor configurations
+ * This object is responsible for holding and updating local configurations
  */
 object Config {
   private val log = Logger(getClass())

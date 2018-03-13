@@ -18,4 +18,7 @@ message OpcConfig {
     repeated string blacklist = 2;
   }
   TagFilters tag_filters = 3;
+
+  // list of tags to subscribe to based on matches from tag_filters
+  repeated string subscribed_tags = 4;
 }

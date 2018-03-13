@@ -5,7 +5,7 @@ import com.typesafe.scalalogging.Logger
 import com.hashmapinc.tempus.edge.track.manager.iofog.{IofogConnection, IofogController}
 
 /**
- * Driver for the track manager
+ * Driver for the overall edge application
  *
  * @author randypitcherii
  */

@@ -19,6 +19,17 @@ message OpcConfig {
   }
   TagFilters tag_filters = 3;
 
-  // list of tags to subscribe to based on matches from tag_filters
-  repeated string subscribed_tags = 4;
+  // define device mapping regex's (regex -> device)
+  message DeviceMap {
+    string pattern = 1;
+    string device = 2;
+  }
+  repeated DeviceMap device_maps = 5;
+
+  // define subscription
+  message Subscription {
+    string tag = 1;
+    string device = 2;
+  }
+  repeated Subscription subscriptions = 6;
 }

@@ -12,22 +12,27 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint
 import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription
 import org.eclipse.milo.opcua.stack.client.UaTcpStackClient
-
 import com.typesafe.scalalogging.Logger
 
 import com.hashmapinc.tempus.edge.opcTagFilter.Config
+import com.hashmapinc.tempus.edge.track.proto.OpcConfig
 
 object OpcConnection {
   private val logger = Logger(getClass())
 
   //create client
-  var client = getUpdatedClient
-  if (client.isSuccess) logger.info("Successfully created client.")
+  var client: Option[OpcUaClient] = None
   
   /**
-   * Uses values in the Config object to create an opcUaClient configuration
+   * Creates a opcUaClient configuration
+   *
+   * @param opcEndpoint - String holding the opc endpoint to connect to
+   * @param securityType - SecurityType protobuf object describing the security to use
    */
-  def getClientConfig: OpcUaClientConfig = {
+  def getClientConfig (
+    opcEndpoint: String,
+    securityType: OpcConfig.SecurityType
+  ): OpcUaClientConfig = {
     logger.info("creating opc client configuration...")
     
     //=========================================================================
@@ -40,18 +45,24 @@ object OpcConnection {
     logger.info("security temp dir: {}", securityTempDir.getAbsolutePath())
 
     // TODO: Implement other securityPolicy options
-    val securityPolicy = SecurityPolicy.None 
+    val securityPolicy = 
+      if (securityType == OpcConfig.SecurityType.NONE) SecurityPolicy.None
+      else {
+        logger.error("could not implement securityType: " + securityType)
+        throw new Exception("unable to implement securityType: " + securityType)
+      }
+
     //=========================================================================
 
     //=========================================================================
     // endpoint configs
     //=========================================================================
     val endpoints= Try({
-      UaTcpStackClient.getEndpoints(Config.trackConfig.get.getOpcConfig.endpoint).get
+      UaTcpStackClient.getEndpoints(opcEndpoint).get
     }).recoverWith({
       case e: Exception => {
         // try the explicit discovery endpoint as well
-        val discoveryUrl = Config.trackConfig.get.getOpcConfig.endpoint + "/discovery"
+        val discoveryUrl = opcEndpoint + "/discovery"
         logger.info("Trying explicit discovery URL: {}", discoveryUrl)
         Success(UaTcpStackClient.getEndpoints(discoveryUrl).get)
       }
@@ -75,24 +86,32 @@ object OpcConnection {
   }
 
   /**
-   * Gets the latest opc configuration and updates the client with a new instance.
+   * Creates a new opc client.
+   *
+   * @param opcEndpoint - String holding the opc endpoint to connect to
+   * @param securityType - SecurityType protobuf object describing the security to use
    */
-  def getUpdatedClient: Try[OpcUaClient] = {
+  def createOpcClient (
+    opcEndpoint: String,
+    securityType: OpcConfig.SecurityType
+  ): OpcUaClient = {
     logger.info("creating new opc client..")
-    val updatedClient = Try(new OpcUaClient(getClientConfig))
-    if (updatedClient.isFailure) {
-      logger.error("unable to create opc client." + 
-        " Will retry when new configuration arrives...")
-    }
-
-    //return updated client
-    updatedClient
+    new OpcUaClient(getClientConfig(opcEndpoint, securityType))
   }
 
   /**
    * updates the client attribute to the latest client instance with latest opc configuration
    */
   def updateClient: Unit = {
-    client = getUpdatedClient
+    val updatedClient = Try({
+      val endpoint = Config.trackConfig.get.getOpcConfig.endpoint
+      val securityType = Config.trackConfig.get.getOpcConfig.securityType
+      Option(createOpcClient(endpoint, securityType))
+    })
+
+    if (updatedClient.isFailure)  logger.error("unable to update opc client. Will retry when new configuration arrives...")
+    if (updatedClient.isSuccess)  logger.info("Successfully updated client.")
+
+    client = updatedClient.getOrElse(None)
   }
 }

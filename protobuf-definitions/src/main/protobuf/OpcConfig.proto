@@ -24,12 +24,15 @@ message OpcConfig {
     string pattern = 1;
     string device = 2;
   }
-  repeated DeviceMap device_maps = 5;
+  repeated DeviceMap device_maps = 4;
 
-  // define subscription
-  message Subscription {
-    string tag = 1;
-    string device = 2;
+  // define subscriptions
+  message Subscriptions {
+    message Subscription {
+      string tag = 1;
+      string device = 2;
+    }
+    repeated Subscription list = 1;
   }
-  repeated Subscription subscriptions = 6;
+  Subscriptions subs = 5;
 }

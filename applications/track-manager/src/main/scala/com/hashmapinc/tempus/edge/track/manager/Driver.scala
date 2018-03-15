@@ -19,5 +19,8 @@ object Driver {
     
     IofogConnection.connect
     log.info("iofog connection was successful. Listening...")
+
+    // request first configs
+    IofogConnection.requestConfigs
   }
 }

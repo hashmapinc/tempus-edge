@@ -5,7 +5,7 @@ import com.typesafe.scalalogging.Logger
 import com.hashmapinc.tempus.edge.opcClient.iofog.{IofogConnection, IofogController}
 
 /**
- * Driver for the overall OPC Monitoring process
+ * Driver for the overall edge application
  *
  * @author randypitcherii
  */
@@ -15,7 +15,7 @@ object Driver {
   def main(
     args: Array[String]
   ): Unit = {
-    log.info("Starting Monitor")
+    log.info("Starting edge application driver...")
 
     log.info("SELFNAME = " + System.getenv("SELFNAME"))
     log.info("CONTAINERID = " + Config.CONTAINER_ID)

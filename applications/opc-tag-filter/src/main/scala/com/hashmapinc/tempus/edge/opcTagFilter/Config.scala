@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.opcClient
+package com.hashmapinc.tempus.edge.opcTagFilter
 
 import java.nio.file.{Files,Paths}
 import scala.util.Try
@@ -25,7 +25,7 @@ object Config {
    * This function updates the trackConfig
    */
   def updateConfigs: Unit = {
-    log.info("Attempting initial load of trackConfig from " + PATH_TO_TRACK_CONFIG)
+    log.info("Attempting load of trackConfig from " + PATH_TO_TRACK_CONFIG)
 
     // update configs
     trackConfig = loadConfigs(PATH_TO_TRACK_CONFIG)

@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.hashmapinc.tempus.edge</groupId>
-  <artifactId>opc-client</artifactId>
+  <artifactId>opc-tag-filter</artifactId>
   <version>0.1.0</version>
   <name>${project.artifactId}</name>
-  <description>Tempus edge application for converting iofog messages to opc writes and opc reads to iofog messages.</description>
+  <description>Tempus Edge application for regex matching of OPC tags.</description>
   <inceptionYear>2018</inceptionYear>
 
   <properties>
@@ -149,7 +149,7 @@
           <finalName>${project.artifactId}-uber</finalName>
           <transformers>
             <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-              <mainClass>com.hashmapinc.tempus.edge.opcClient.Driver</mainClass>
+              <mainClass>com.hashmapinc.tempus.edge.opcTagFilter.Driver</mainClass>
             </transformer>
           </transformers>
           <filters>

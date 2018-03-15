@@ -10,6 +10,29 @@ message OpcConfig {
   enum SecurityType {
     NONE = 0;
   }
-
   SecurityType security_type = 2; // security settings to use
+
+  // define tag filter criteria
+  message TagFilters {
+    repeated string whitelist = 1;
+    repeated string blacklist = 2;
+  }
+  TagFilters tag_filters = 3;
+
+  // define device mapping regex's (regex -> device)
+  message DeviceMap {
+    string pattern = 1;
+    string device = 2;
+  }
+  repeated DeviceMap device_maps = 4;
+
+  // define subscriptions
+  message Subscriptions {
+    message Subscription {
+      string tag = 1;
+      string device = 2;
+    }
+    repeated Subscription list = 1;
+  }
+  Subscriptions subs = 5;
 }

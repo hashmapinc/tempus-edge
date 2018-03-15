@@ -12,6 +12,7 @@ enum ConfigMessageTypes {
   TRACK_METADATA_SUBMISSION = 2;  // submits new track metadata to a container
   MQTT_CONFIG_SUBMISSION = 3;     // submits new mqtt configs to a container
   OPC_CONFIG_SUBMISSION = 4;      // submits new opc configs to a container
+  OPC_SUBSCRIPTIONS_SUBMISSION = 5;      // submits new opc subscriptions to a container
 }
 
 // Define data message types

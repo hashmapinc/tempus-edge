@@ -9,8 +9,7 @@ import com.typesafe.scalalogging.Logger
 import com.google.protobuf.InvalidProtocolBufferException
 import scalapb.json4s.JsonFormat
 
-import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes}
-import com.hashmapinc.tempus.edge.track.proto.{TrackConfig, TrackMetadata, MqttConfig, OpcConfig}
+import com.hashmapinc.tempus.edge.proto._
 
 /**
  * This object holds the logic for handling iofog events

@@ -7,8 +7,7 @@ import org.scalatest.FlatSpec
 import scalapb.json4s.JsonFormat
 
 import com.hashmapinc.tempus.edge.proto._
-import com.hashmapinc.tempus.edge.track.proto._
-import com.hashmapinc.tempus.edge.track.proto.TrackConfig._
+import com.hashmapinc.tempus.edge.proto.TrackConfig._
 
 class IofogControllerTest extends FlatSpec {
   //===========================================================================

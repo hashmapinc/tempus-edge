@@ -6,7 +6,6 @@ import javax.json.Json
 import org.scalatest.FlatSpec
 
 import com.hashmapinc.tempus.edge.proto._
-import com.hashmapinc.tempus.edge.track.proto._
 
 class IofogControllerTest extends FlatSpec {
   // create sample protobuf objects from pb files

@@ -5,7 +5,7 @@ import scala.util.Try
 
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.track.proto.{TrackConfig, OpcConfig}
+import com.hashmapinc.tempus.edge.proto.{TrackConfig, OpcConfig}
 
 /**
  * This object is responsible for holding and updating local configurations

@@ -15,7 +15,7 @@ import org.eclipse.milo.opcua.stack.client.UaTcpStackClient
 import com.typesafe.scalalogging.Logger
 
 import com.hashmapinc.tempus.edge.opcTagFilter.Config
-import com.hashmapinc.tempus.edge.track.proto.OpcConfig
+import com.hashmapinc.tempus.edge.proto.OpcConfig
 
 object OpcConnection {
   private val logger = Logger(getClass())

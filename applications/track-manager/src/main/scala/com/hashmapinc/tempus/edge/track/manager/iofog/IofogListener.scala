@@ -6,8 +6,7 @@ import com.iotracks.api.listener.IOFogAPIListener
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes}
-import com.hashmapinc.tempus.edge.track.proto.TrackConfig
+import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes, TrackConfig}
 
 /**
  * This object dispatches IoFog events to the IofogController

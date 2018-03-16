@@ -2,9 +2,20 @@ package com.hashmapinc.tempus.edge.opcTagFilter.opc
 
 import scala.util.Try
 import scala.util.matching.Regex
+import scala.collection.mutable.Queue
 
 import com.typesafe.scalalogging.Logger
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient
+import org.eclipse.milo.opcua.stack.core.Identifiers
+import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId
+import org.eclipse.milo.opcua.stack.core.types.enumerated.BrowseDirection
+import org.eclipse.milo.opcua.stack.core.types.enumerated.BrowseResultMask
+import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass
+import org.eclipse.milo.opcua.stack.core.types.structured.BrowseDescription
+import org.eclipse.milo.opcua.stack.core.types.structured.BrowseResult
+import org.eclipse.milo.opcua.stack.core.types.structured.ReferenceDescription
+import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint
+
 
 import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes, OpcConfig}
 import com.hashmapinc.tempus.edge.opcTagFilter.Config
@@ -16,6 +27,17 @@ object OpcController {
   // global vars
   private val configProtocol = MessageProtocols.CONFIG.value.toByte
   private val subscriptionsSubmission = ConfigMessageTypes.OPC_SUBSCRIPTIONS_SUBMISSION.value.toByte
+
+  /** This function recurses through the OPC server and finds matching tags
+   *
+   *  @param whitelist - Regex that tags must match to be a subscription
+   *  @param opcClient  - milo OPC UA client to use for finding tags.
+   *  @param currentNode  - NodeId currently being evaluated for matches
+   *  @param currentMatches  - list of matches recursively found so far
+   *
+   *  @return matches - string array containing matching tags
+   */
+  
 
   /** This function creates subscriptions from given regexs and opc client
    *
@@ -31,6 +53,29 @@ object OpcController {
     opcClient: OpcUaClient
   ): OpcConfig.Subscriptions = {
     log.info("Creating subscriptions...")
+
+    @scala.annotation.tailrec
+    def recurseTags(
+      nodeQueue: Queue[NodeId], // queue holding the nodes to visit
+      currentMatches: List[String] // list of current matching tags
+    ): List[String] = {
+      if (nodeQueue.isEmpty) currentMatches
+      else {
+        val curNode = nodeQueue.dequeue
+        val browseDesc = new BrowseDescription(
+          curNode,
+          BrowseDirection.Forward,
+          Identifiers.References,
+          true,
+          uint(NodeClass.Object.getValue() | NodeClass.Variable.getValue()),
+          uint(BrowseResultMask.All.getValue())
+        )
+        val browseResult = opcClient.browse(browseDesc).get
+        recurseTags(nodeQueue, currentMatches)
+      }
+    }
+    val matches: List[String] = recurseTags(Queue(Identifiers.RootFolder), List())
+
     OpcConfig.Subscriptions(List(
       OpcConfig.Subscriptions.Subscription("tag0", "deviceA"),
       OpcConfig.Subscriptions.Subscription("tag1", "deviceA"),
@@ -41,8 +86,8 @@ object OpcController {
 
   /** This function drives the subscription updating process
    *
-   *  This function uses the local OpcConfig regex's 
-   *  to update the OpcConfig.subscriptions list.
+   *  This function uses the local OpcConfig regex's to update the 
+   *  OpcConfig.subscriptions list.
    */
   def updateSubscriptions: Unit = {
     log.info("Updating subscriptions...")
@@ -51,7 +96,9 @@ object OpcController {
       val tagFilters = Config.trackConfig.get.getOpcConfig.getTagFilters
       val whitelistRegex = tagFilters.whitelist.mkString("|").r
       val blacklistRegex = tagFilters.blacklist.mkString("|").r
-      createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get)
+      OpcConnection.synchronized {
+        createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get)
+      }
     })
 
     if (newSubscriptions.isSuccess) 

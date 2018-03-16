@@ -89,7 +89,10 @@ object OpcConnection {
    * Creates a new opc client.
    *
    * @param opcEndpoint - String holding the opc endpoint to connect to
-   * @param securityType - SecurityType protobuf object describing the security to use
+   * @param securityType - SecurityType protobuf object describing the 
+   *                       security to use
+   *
+   * @return opcClient - new opc client
    */
   def createOpcClient (
     opcEndpoint: String,
@@ -100,18 +103,32 @@ object OpcConnection {
   }
 
   /**
-   * updates the client attribute to the latest client instance with latest opc configuration
+   *  updates the client attribute to the latest client instance with latest 
+   *  opc configuration.
+   *
+   *  If client creation fails, updateClient will retry every 
+   *  Config.OPC_RECONN_DELAY mSeconds until it succeeds.
    */
   def updateClient: Unit = {
-    val updatedClient = Try({
+    var updatedClient = Try({
       val endpoint = Config.trackConfig.get.getOpcConfig.endpoint
       val securityType = Config.trackConfig.get.getOpcConfig.securityType
       Option(createOpcClient(endpoint, securityType))
     })
 
-    if (updatedClient.isFailure)  logger.error("unable to update opc client. Will retry when new configuration arrives...")
-    if (updatedClient.isSuccess)  logger.info("Successfully updated client.")
-
-    client = updatedClient.getOrElse(None)
+    while (updatedClient.isFailure) { // TODO: this feels not Scala-y. Find a way to do this elegantly
+      logger.error("unable to update opc client. Will retry in {} milliseconds...", Config.OPC_RECONN_DELAY)
+      Thread.sleep(Config.OPC_RECONN_DELAY)
+      updatedClient = Try({
+        val endpoint = Config.trackConfig.get.getOpcConfig.endpoint
+        val securityType = Config.trackConfig.get.getOpcConfig.securityType
+        Option(createOpcClient(endpoint, securityType))
+      })
+    }
+    
+    logger.info("Successfully updated client.")
+    this.synchronized {
+      client = updatedClient.getOrElse(None)
+    }
   }
 }

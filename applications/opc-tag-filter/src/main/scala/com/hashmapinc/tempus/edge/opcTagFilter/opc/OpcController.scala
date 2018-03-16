@@ -6,9 +6,7 @@ import scala.util.matching.Regex
 import com.typesafe.scalalogging.Logger
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient
 
-import com.hashmapinc.tempus.edge.proto.MessageProtocols
-import com.hashmapinc.tempus.edge.proto.ConfigMessageTypes
-import com.hashmapinc.tempus.edge.track.proto.OpcConfig
+import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes, OpcConfig}
 import com.hashmapinc.tempus.edge.opcTagFilter.Config
 import com.hashmapinc.tempus.edge.opcTagFilter.iofog.IofogConnection
 

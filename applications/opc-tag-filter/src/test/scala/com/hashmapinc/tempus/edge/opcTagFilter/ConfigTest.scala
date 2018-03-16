@@ -4,7 +4,7 @@ import java.nio.file.{Files, Paths}
 
 import org.scalatest.FlatSpec
 
-import com.hashmapinc.tempus.edge.track.proto.TrackConfig
+import com.hashmapinc.tempus.edge.proto.TrackConfig
 
 class ConfigTest extends FlatSpec {
   //===========================================================================

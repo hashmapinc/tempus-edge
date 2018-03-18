@@ -60,33 +60,21 @@ You can follow below link to get started:
 
    https://iotracks.com/build-sample
 
-### Creating propriety microservice 
+### Creating edge applications
 
-IOFOG provide SDK in four languages to create microservices:
+IOFOG provides an SDK in four languages to create edge applications:
 1) Java
 2) Python
 3) NodeJS
 4) Go
 
+### Publishing edge applications
 
-We have already created 3 microservices code of which can be seen in following github link:
-
-``` https://github.com/hashmapinc/tempus-iofog.git ```
-
-Following are docker images of same:
-```
-1) hashmapinc/iofog:TS
-2) hashmapinc/iofog:jsonfilter
-3) hashmapinc/iofog:mqtt-client
-```
-
-### Publishing propriety microservice 
-
-1.Login the iofog.
+1.Log in to the [ioAuthoring page](https://iotracks.com/login).
 
 2.Use the "Publish" menu to access the publishing portal.
 
-3.Drag and drop the element to the main area.
+3.Drag and drop the proper hardware element to the main area. Make sure the element matches the hardware you want your applicaiton to run on.
 
 4.Add Name to your Element.
 

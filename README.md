@@ -1,288 +1,87 @@
-<img src="https://github.com/hashmapinc/hashmap.github.io/blob/master/images/tempus/TempusLogoBlack2.png" width="910" height="245" alt="Hashmap, Inc Tempus"/>
-
+<img src="./images/TempusEdgeforWeb.png"alt="Tempus Edge"/>
 [![License](http://img.shields.io/:license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/hashmapinc/tempus-edge.svg?columns=all)](https://waffle.io/hashmapinc/tempus-edge)
 
-# IOFOG EDGE PROCESSING FLOW
-This document discuss how IOFOG can be used to filter data at the edge. IOFOG platform provide a way to run code remotely.The code/logic which we want to run is packaged as small micro services which are provided as a docker images.IOFOG provide interface to communicate between 
-these micro services. Flow of data is assume to be starting from a microservices which generate time series data. This data is then filtered using Tempus Filter service. Using MQTT service the filtered data is sent to ThingsBoard server. 
-## Table of Contents
+# Tempus Edge
+This repository holds all code for Tempus Edge from [Hashmap](https://www.hashmapinc.com/).
 
-- [Features](#features)
-- [Requirements](#requirements)
-- [Getting Started](#getting-started)
-- [Usage](#usage)
-- [License](#license)
+## Repository Standards
+- Application folders should be all lower case with '-' to separate words; no underscores, no spaces, no camelCase.
+- Application folders should contain Dockerfiles defining the applicaiton image.
+  - Docker images should be named using the pattern `hashmapinc/tempus-edge-<APPLICATION-NAME>:<VERSION>`
+- Application folders should contain a README.md describing the application and usage. This includes instructions for building and running both the Docker image and the source code.
+- Build files / directories should not be committed to the repository. This means no JAR files, no \*.pyc files, and no mvn \*\*/target/ build directories.
+- All commits should result in buildable code. The code may be buggy, but please do not commit unbuildable code if you can help it.
 
-## Features
+NOTE: Please submit pull requests to udpate these rules if you think something else makes more sense!
 
-Tempus IOFOG services has following feature:
+## Configuration Standards
+Configuration for each application will be managed by an instance of the `track-manager` service. Configurations will be made available through a shared `volume` in each application's docker container. 
 
-* Create Micro-service for creating simulated timeseries data.
-* Create a filter service which filter out data at source. 
-* Send only filtered data to the ThingsBoard.
-
-
-## Requirements
-
-* JDK 1.8 at a minimum
-* Maven 3.1 or newer
-* Git client (to build locally)
-
-
-## Getting Started
-
-### Install IOFOG
-
-
-Create an account with IOTRACKS to use IOFOG service
-
-    https://iotracks.com/signup
-       
-Follow instructions in following link to install iofog on your machine:
-
-    https://iotracks.com/products/iofog/installation/linux/ubuntu
-
-OR, use the development_fog dockerfile to build your own preinstalled iofog instance. [Instructions to run can be found here.](development_fog/README.md)
-    
-### Provision the IOFOG 
-   
-Login IOFOG to access tracks and fog. 
-
-    https://iotracks.com/login       
-
-After login go to the fog tab drag a fog instance on fog page.And click on new fog instance.
-
-<img src="./Docs/images/readme_images/1.png" width="910" height="545"></img> 
-
-Click on new fog instance.On right hand you will see properties of fog. 
-Press the generate key to get id of the fog for provisioning. 
-<img src="./Docs/images/readme_images/2.png" width="910" height="545"/>     
-
-Go to your Linux command line, type 'sudo iofog provision ABCDWXYZ' and replace the ABCDWXYZ
-with your provisioning key (it is case sensitive) and verify the results
-You can follow below link to get started:
-
-   https://iotracks.com/build-sample
-
-### Creating propriety microservice 
-
-IOFOG provide SDK in four languages to create microservices:
-1) Java
-2) Python
-3) NodeJS
-4) Go
-
-
-We have already created 3 microservices code of which can be seen in following github link:
-
-``` https://github.com/hashmapinc/tempus-iofog.git ```
-
-Following are docker images of same:
+### Configuration Volume Mapping
+The volume in each **application container** is accessible at:
 ```
-1) hashmapinc/iofog:TS
-2) hashmapinc/iofog:jsonfilter
-3) hashmapinc/iofog:mqtt-client
+/mnt/config/config.pb
 ```
 
-### Publishing propriety microservice 
+The **host machine** where the ioFog agent is running will store shared configs at:
+```
+/iofog/config/<YOUR_TRACK_NAME>/config.pb
+```
 
-1.Login the iofog.
+This allows multiple tracks to run on the same `fog` host.
 
-2.Use the "Publish" menu to access the publishing portal.
+The volume mapping from the **host machine** to each **application container** is performed in ioAuthoring on each element in the volume mappings section. The JSON that defines this volume mapping is:
+```json
+{"volumemappings": [
+  {"hostdestination": "/iofog/config/<YOUR_TRACK_NAME>", 
+   "containerdestination": "/mnt/config", 
+   "accessmode": "rw"}
+]}
+```
 
-3.Drag and drop the element to the main area.
+### Configuration Files
+Configurations are stored as `protobuf` files. The `track-manager` will store incoming configurations in the shared volume using the following convention:
+```
+/mnt/config/<YOUR_TRACK_NAME>/config.pb
+```
 
-4.Add Name to your Element.
+When new configurations are available, the `track-manager` will send a config protocol message to the track and each application will be responsible for updating their configs with the new `config.pb` contents.
 
-5.Add Container Image URL. It is the path to repository where the container is posted
-  Be sure to enter your container image string properly.
+## IoFog Messaging Standards
+Standard message formatting should be used by all edge applications. The purpose of standard message formatting is:
 
-<img src="./Docs/images/readme_images/3.png" width="910" height="545"></img> 
+- reduce message parsing cost
+- promote reusability between edge applications
+- maintain flexibility for future edge application requirements
+- improve the ease of application debugging
 
-Following link discuss in detail how to create and publish microservices:
+### Message Protocol
+Each IoFog message should contain a `messageProtocol` byte that describes the kind of message being sent. This value is a `byte` or `uint8` depending on the language. It is the **first byte** in the messageContent field of the IoFog message. The significance of each value is detailed below:
 
-```https://iotracks.com/creatingmicroservices  ```
+Protocol Byte  | Protocol Name | Description
+------------- | ------------- | -------------
+`000`  | Undefined protocol | This can indicate a message that didn't originate from a Hashmap application. This is used to allow support for JSON-based messaging used in default ioFog elements.
+`001`  | Config protocol | describes messages relating to configurations. This is generally either commanding a receiving element to accept new configs or alerting elements that new configs are available.
+`002`  | Data protocol | used for standard data passing from element to element.
 
-### Configuring Services
+NOTE: new message protocols will be defined here as new protocols become necessary. Please send a pull request if you'd like to suggest other protocols!
 
-1) **Time Series Service**:
-   
-    No Configuration Needed.
-2) **Json Filter Service**:
+### Message Type
+In general, a `messageType` will be similar to a `messageProtocol`. It will also be a `byte` value and will be the **second byte** in the ioFog message content field. The type will serve to further specify how to decode the incoming message content or further specify what action a container should take when receiving a message.
 
-  Basic building block of the service has 3 terms:
-  
-  
-   `{
-      	"term": "value.density",
-               "OP" : "GTE",
-             "value":   0
-    }`
-  
-  
-  i) **term**   : The term in json on which filter needs to be applied. The child term can be 
-    accessec using dot.
-    Example:
-    
-   ` {
-       "range": {
-                    "start":0,
-                    "end":100
-                 }
-    }`
-    
-  if you want to filter on "start" mention "range.start" in the term.
-    
-  ii) **OP**  : Operation is what operation you need to perform on the the term.Allowed operation
-  
-      1) LEQ : less than equal
-      2) GEQ : greater than equal
-      3) LT  : less than
-      4) GT  : greater tham
-      5) EQ  : equals
-      6) NEQ : not equal
-  
-  iii)**value**  : Value with which operation on term need to be done
-  
-  Filters are furthur divided into     
-  a) String Filters
-  
-  b) Double Filters
-  
-  c) Boolean Filters
-  
- ` {
-     "DOUBLE":{
-  	"term": "value.density",
-           "OP" : "GTE",
-         "value":   0
-  	`}
-  }
-  
-  This tells filter type of term.
-  
-  To create complex query **AND** and **OR** Filters are also provided.
-  AND/OR filter 
-  
-  `{
-     "EXP1":"..",
-      "EXP2":".."
-  } `  
-  Both EXP1/EXP2 both can be again AND ,OR filter or and of String,Double or Boolean Filter
-  
-  
-`{
+The message types for each message protocol are defined below:
 
-	"OR": {
-		"EXP1": {
-			"AND": {
-				"EXP1": {
-					"DOUBLE": {
-						"term": "value.density",
-						"OP": "GTE ",
-						"value": 0
-					}
-				},
-				"EXP2": {
-					"DOUBLE": {
-						"term": "value.density",
-						"OP": "LTE",
-						"value": 1
-					}
-				}
-			}
-		},
-		"EXP2": {
-			"STRING": {
-				"term": "value.TYPE.id",
-				"OP": "NEQ",
-				"value": "TEST"
-			}
-		}
-	}
-}
-`
+Protocol Byte  | Type Byte | Protobuf Enum | Description
+------------- | ------------- | ------------- | -------------
+`000`  | `-` | not defined | -
+`001`  | `000` | `UPDATE_ALERT` | informs the receiver that new configs are available. The receiver is expected to update their own configs.
+`001`  | `001` | `TRACK_CONFIG_SUBMISSION` | informs the receiver that a new track config is contained in this message and that the receiver should parse and persist the new track config. The `track-manager` is the intended consumer of this message type. **NOTE:** this config will be accepted as the new config by the track manager. This means changes will not be 'merged' with current configs. Use this message type when you want to submit a completely new config. Use other message types to update individual pieces of a track's configuration.
+`001`  | `002` | `TRACK_METADATA_SUBMISSION` | this message contains a TrackMetadata protobuf byte array and commands the receiver to update a track's metadata.
+`001`  | `003` | `MQTT_CONFIG_SUBMISSION` | this message contains an MqttConfig protobuf byte array and commands the receiver to update a track's MQTT configuration.
+`001`  | `004` | `OPC_CONFIG_SUBMISSION` | this message contains an OpcConfig protobuf byte array and commands the receiver to update a track's OPC configuration.
+`002`  | `000` | `JSON` | used to define a message that is a protobuf byte array that will decode into a JSON string that will need to be parsed by the receiver.
+`002`  | `001` | `MQTT` | used to define a message that is a protobuf byte array that will decode into an MQTT message. This message contains everything necessary for the `mqtt-client` to send this message in MQTT format.
+`002`  | `002` | `OPC` | used to define a message that is a protobuf byte array that will decode into an OPC message. This message contains everything necessary for the `opc-client` to send this message in OPC format.
 
-3)**MQTT-Service**
-
-  For MQTT service you need to define 
-  
-  i)   Publishers
-  
-  ii)  Broker
-  
-  iii) User of device in things board
-  
-  Example:
-  
-`	
-
-{
-
-    "subscriptions": [{
-
-        "topic": "v1/devices/me/telemetry",
-
-        "qos": 2
-
-    }],
-
-    "publishers": [{
-
-        "topic": "v1/devices/me/telemetry",
-
-        "qos": 2
-
-    }],
-
-    "broker": {
-
-        "host": "192.168.1.183",
-
-        "port": 1883
-
-    },
-
-    "user": {
-
-        "username": "ioFogToken",
-
-        "password": " "
-
-    }
-
-}`
-  
-  
-       
-    
-
-    
-
-## Usage
-
-1) Publish the 3 tempus services as discussed above.
-2) Configure the services.
-2) Create a track with  services as shown below.
-
-<img src="./Docs/images/readme_images/4.png" width="910" height="545"></img>  
-
-4) You can check data flowing into ThingsBoard.
-
-
-## License
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
- 
-
+NOTE: new message types will be defined here as new types become necessary. Please send a pull request if you'd like to suggest other types!

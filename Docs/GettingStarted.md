@@ -1,8 +1,4 @@
-<img src="https://github.com/hashmapinc/hashmap.github.io/blob/master/images/tempus/TempusLogoBlack2.png" width="910" height="245" alt="Hashmap, Inc Tempus"/>
-
-[![License](http://img.shields.io/:license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
-
-# IOFOG EDGE PROCESSING FLOW
+# IOFOG EDGE PROCESSING FLOW - Getting Started
 This document discuss how IOFOG can be used to filter data at the edge. IOFOG platform provide a way to run code remotely.The code/logic which we want to run is packaged as small micro services which are provided as a docker images.IOFOG provide interface to communicate between 
 these micro services. Flow of data is assume to be starting from a microservices which generate time series data. This data is then filtered using Tempus Filter service. Using MQTT service the filtered data is sent to ThingsBoard server. 
 ## Table of Contents

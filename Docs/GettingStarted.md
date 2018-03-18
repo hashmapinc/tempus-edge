@@ -38,7 +38,7 @@ Follow instructions in following link to install iofog on your machine:
 
     https://iotracks.com/products/iofog/installation/linux/ubuntu
 
-OR, use the development_fog dockerfile to build your own preinstalled iofog instance. [Instructions to run can be found here.](development_fog/README.md)
+OR, use the development_fog dockerfile to build your own preinstalled iofog instance. [Instructions to run can be found here.](../development-fog)
     
 ### Provision the IOFOG 
    
@@ -48,11 +48,11 @@ Login IOFOG to access tracks and fog.
 
 After login go to the fog tab drag a fog instance on fog page.And click on new fog instance.
 
-<img src="./Docs/images/readme_images/1.png" width="910" height="545"></img> 
+<img src="./images/readme_images/1.png" width="910" height="545"></img> 
 
 Click on new fog instance.On right hand you will see properties of fog. 
 Press the generate key to get id of the fog for provisioning. 
-<img src="./Docs/images/readme_images/2.png" width="910" height="545"/>     
+<img src="./images/readme_images/2.png" width="910" height="545"/>     
 
 Go to your Linux command line, type 'sudo iofog provision ABCDWXYZ' and replace the ABCDWXYZ
 with your provisioning key (it is case sensitive) and verify the results
@@ -93,7 +93,7 @@ Following are docker images of same:
 5.Add Container Image URL. It is the path to repository where the container is posted
   Be sure to enter your container image string properly.
 
-<img src="./Docs/images/readme_images/3.png" width="910" height="545"></img> 
+<img src="./images/readme_images/3.png" width="910" height="545"></img> 
 
 Following link discuss in detail how to create and publish microservices:
 
@@ -109,23 +109,27 @@ Following link discuss in detail how to create and publish microservices:
   Basic building block of the service has 3 terms:
   
   
-   `{
-      	"term": "value.density",
-               "OP" : "GTE",
-             "value":   0
-    }`
+```json
+{
+    "term": "value.density",
+    "OP" : "GTE",
+    "value":   0
+}
+```
   
   
   i) **term**   : The term in json on which filter needs to be applied. The child term can be 
     accessec using dot.
     Example:
-    
-   ` {
-       "range": {
-                    "start":0,
-                    "end":100
-                 }
-    }`
+
+```json
+{
+    "range": {
+        "start":0,
+        "end":100
+    }
+}
+```
     
   if you want to filter on "start" mention "range.start" in the term.
     
@@ -146,58 +150,61 @@ Following link discuss in detail how to create and publish microservices:
   b) Double Filters
   
   c) Boolean Filters
-  
- ` {
-     "DOUBLE":{
-  	"term": "value.density",
-           "OP" : "GTE",
-         "value":   0
-  	`}
-  }
+
+```json
+{
+    "DOUBLE":{
+        "term": "value.density",
+        "OP" : "GTE",
+        "value":   0
+    }
+}
+```
   
   This tells filter type of term.
   
   To create complex query **AND** and **OR** Filters are also provided.
   AND/OR filter 
-  
-  `{
-     "EXP1":"..",
-      "EXP2":".."
-  } `  
+```json
+{
+    "EXP1":"..",
+    "EXP2":".."
+}
+```
+
   Both EXP1/EXP2 both can be again AND ,OR filter or and of String,Double or Boolean Filter
   
-  
-`{
-
-	"OR": {
-		"EXP1": {
-			"AND": {
-				"EXP1": {
-					"DOUBLE": {
-						"term": "value.density",
-						"OP": "GTE ",
-						"value": 0
-					}
-				},
-				"EXP2": {
-					"DOUBLE": {
-						"term": "value.density",
-						"OP": "LTE",
-						"value": 1
-					}
-				}
-			}
-		},
-		"EXP2": {
-			"STRING": {
-				"term": "value.TYPE.id",
-				"OP": "NEQ",
-				"value": "TEST"
-			}
-		}
-	}
+```json  
+{
+    "OR": {
+        "EXP1": {
+            "AND": {
+                "EXP1": {
+                    "DOUBLE": {
+                        "term": "value.density",
+                        "OP": "GTE ",
+                        "value": 0
+                    }
+                },
+                "EXP2": {
+                    "DOUBLE": {
+                        "term": "value.density",
+                        "OP": "LTE",
+                        "value": 1
+                    }
+                }
+            }
+        },
+        "EXP2": {
+            "STRING": {
+                "term": "value.TYPE.id",
+                "OP": "NEQ",
+                "value": "TEST"
+            }
+        }
+    }
 }
-`
+```
 
 3)**MQTT-Service**
 
@@ -211,49 +218,26 @@ Following link discuss in detail how to create and publish microservices:
   
   Example:
   
-`	
-
+```json
 {
-
     "subscriptions": [{
-
         "topic": "v1/devices/me/telemetry",
-
         "qos": 2
-
     }],
-
     "publishers": [{
-
         "topic": "v1/devices/me/telemetry",
-
         "qos": 2
-
     }],
-
     "broker": {
-
         "host": "192.168.1.183",
-
         "port": 1883
-
     },
-
     "user": {
-
         "username": "ioFogToken",
-
         "password": " "
-
     }
-
-}`
-  
-  
-       
-    
-
-    
+}
+```
 
 ## Usage
 
@@ -261,7 +245,7 @@ Following link discuss in detail how to create and publish microservices:
 2) Configure the services.
 2) Create a track with  services as shown below.
 
-<img src="./Docs/images/readme_images/4.png" width="910" height="545"></img>  
+<img src="./images/readme_images/4.png" width="910" height="545"></img>  
 
 4) You can check data flowing into ThingsBoard.
 

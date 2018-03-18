@@ -5,6 +5,8 @@
 # Tempus Edge
 This repository holds all code for Tempus Edge from [Hashmap](https://www.hashmapinc.com/).
 
+Tempus Edge makes extensive use of [Eclipse IoFog](https://projects.eclipse.org/proposals/iofog). Checkout our [getting started documentation](./Docs/GettingStarted.md) for learning the basics of IoFog.
+
 ## Repository Standards
 - Application folders should be all lower case with '-' to separate words; no underscores, no spaces, no camelCase.
 - Application folders should contain Dockerfiles defining the applicaiton image.

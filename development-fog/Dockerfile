@@ -3,15 +3,7 @@
 #
 # Linux base + java install + iofog install + docker install + iofog starting
 #
-# You will still need to provision the fog yourself
-# run: iofog provision YourProvisionKey
-#
-# NOTE: make sure to add docker access to this container by running with the
-#       following flag:
-#
-#       -v /var/run/docker.sock:/var/run/docker.sock
-#
-#       This allows iofog to use your host docker daemon to create elements.
+# You will still need to provision the fog yourselfs
 #==============================================================================
 # start from ubuntu base
 FROM ubuntu

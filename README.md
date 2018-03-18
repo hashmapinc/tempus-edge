@@ -1,4 +1,4 @@
-<img src="./images/TempusEdgeforWeb.png" alt="Tempus Edge"></img>
+<img src="./Docs/images/TempusEdgeforWeb.png" alt="Tempus Edge"></img>
 [![License](http://img.shields.io/:license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 [![Waffle.io - Columns and their card count](https://badge.waffle.io/hashmapinc/tempus-edge.svg?columns=all)](https://waffle.io/hashmapinc/tempus-edge)
 

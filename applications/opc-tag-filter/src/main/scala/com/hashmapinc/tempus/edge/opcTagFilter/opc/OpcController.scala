@@ -82,7 +82,10 @@ object OpcController {
 
           // check for match
           currentMatches // TODO: append tag if curNode is a match
-        }).getOrElse(currentMatches)
+        }).recover({
+          case e: Exception => log.error("Error while traversing opc heirarchy: " + e)
+          currentMatches
+        }).get
         
         // recurse
         recurseTags(nodeQueue, updatedMatches)
@@ -109,6 +112,7 @@ object OpcController {
       val whitelistRegex = tagFilters.whitelist.mkString("|").r
       val blacklistRegex = tagFilters.blacklist.mkString("|").r
       OpcConnection.synchronized {
+        OpcConnection.client.get.connect.get // synchronous connection
         createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get)
       }
     })

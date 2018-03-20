@@ -27,16 +27,25 @@ object OpcController {
   private val configProtocol = MessageProtocols.CONFIG.value.toByte
   private val subscriptionsSubmission = ConfigMessageTypes.OPC_SUBSCRIPTIONS_SUBMISSION.value.toByte
 
-  /** This function recurses through the OPC server and finds matching tags
+  /** This function returns the first deviceName that tag matches the pattern of.
    *
-   *  @param whitelist - Regex that tags must match to be a subscription
-   *  @param opcClient  - milo OPC UA client to use for finding tags.
-   *  @param currentNode  - NodeId currently being evaluated for matches
-   *  @param currentMatches  - list of matches recursively found so far
+   *  @param tag - string value to check for matches
+   *  @param deviceMaps  - OpcConfig.DeviceMaps object for mapping string matches to device names
    *
-   *  @return matches - string array containing matching tags
+   *  @return deviceName - string value of the matching deviceName 
    */
-  
+  def getDeviceName(
+    tag: String,
+    deviceMaps: Seq[OpcConfig.DeviceMap]
+  ): String = {
+    // get all matching device names
+    val deviceName = deviceMaps.flatMap(dMap => {
+      if (dMap.pattern.r.findFirstIn(tag).isDefined) Option(dMap.device) else None
+    })
+
+    // return "" if no match found, otherwise return first match
+    if (deviceName.isEmpty) "" else deviceName(0)
+  }
 
   /** This function creates subscriptions from given regexs and opc client
    *
@@ -101,9 +110,12 @@ object OpcController {
     val matches: List[String] = recurseTags(Queue(Identifiers.RootFolder), List())
     val tags = if (blacklist.toString.isEmpty) matches else matches.filter(blacklist.findFirstIn(_).isEmpty)
 
-    // TODO: actually populate this with a toDevice method
+    // create subs
+    val deviceMaps = Config.trackConfig.get.getOpcConfig.deviceMaps
     OpcConfig.Subscriptions(
-      tags.map(tag => OpcConfig.Subscriptions.Subscription(tag, tag)) // should be (tag, toDevice(tag))
+      tags.map(tag => 
+        OpcConfig.Subscriptions.Subscription(tag, getDeviceName(tag, deviceMaps))
+      )
     )
   }
 
@@ -120,7 +132,11 @@ object OpcController {
       val whitelistRegex = tagFilters.whitelist.mkString("|").r
       val blacklistRegex = (".*\\.\\_.*" +: tagFilters.blacklist).mkString("|").r // add regex to filter out any system tags
       OpcConnection.synchronized {
-        createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get)
+        try 
+          createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get) 
+        catch {
+          case e: Exception => createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get)
+        }
       }
     })
 

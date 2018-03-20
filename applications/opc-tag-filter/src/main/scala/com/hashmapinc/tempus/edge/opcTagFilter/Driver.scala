@@ -3,7 +3,7 @@ package com.hashmapinc.tempus.edge.opcTagFilter
 import com.typesafe.scalalogging.Logger
 
 import com.hashmapinc.tempus.edge.opcTagFilter.iofog.IofogConnection
-import com.hashmapinc.tempus.edge.opcTagFilter.opc.OpcConnection
+import com.hashmapinc.tempus.edge.opcTagFilter.opc.{OpcConnection, OpcController}
 
 /**
  * Driver for the overall edge application
@@ -21,9 +21,10 @@ object Driver {
     log.info("SELFNAME = " + System.getenv("SELFNAME"))
     log.info("CONTAINERID = " + Config.CONTAINER_ID)
 
-    Config.updateConfigs
-    OpcConnection.updateClient
-    
+    Config.updateConfigs                // load initial configs.
+    OpcConnection.updateClient          // init client connection.
+    OpcController.updateSubscriptions   // look for subscriptions.
+      
     log.info("Connecting to iofog...")
     IofogConnection.connect
     log.info("iofog connection was successful. Listening...")

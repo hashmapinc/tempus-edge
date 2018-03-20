@@ -120,7 +120,11 @@ object OpcController {
       val whitelistRegex = tagFilters.whitelist.mkString("|").r
       val blacklistRegex = (".*\\.\\_.*" +: tagFilters.blacklist).mkString("|").r // add regex to filter out any system tags
       OpcConnection.synchronized {
-        createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get)
+        try 
+          createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get) 
+        catch {
+          case e: Exception => createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get)
+        }
       }
     })
 

@@ -118,7 +118,7 @@ object OpcController {
       // concat regex strings with '|' separator and create single regex for each tagFilter
       val tagFilters = Config.trackConfig.get.getOpcConfig.getTagFilters
       val whitelistRegex = tagFilters.whitelist.mkString("|").r
-      val blacklistRegex = tagFilters.blacklist.mkString("|").r
+      val blacklistRegex = (".*\\.\\_.*" +: tagFilters.blacklist).mkString("|").r // add regex to filter out any system tags
       OpcConnection.synchronized {
         createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get)
       }

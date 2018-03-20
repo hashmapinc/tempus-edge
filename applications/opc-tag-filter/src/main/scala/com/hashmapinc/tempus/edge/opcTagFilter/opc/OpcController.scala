@@ -52,11 +52,12 @@ object OpcController {
     opcClient: OpcUaClient
   ): OpcConfig.Subscriptions = {
     log.info("Creating subscriptions...")
+    opcClient.connect.get // connect 
 
     @scala.annotation.tailrec
     def recurseTags(
-      nodeQueue: Queue[NodeId], // queue holding the nodes to visit
-      currentMatches: List[String] // list of current matching tags
+      nodeQueue: Queue[NodeId],     // queue holding the nodes to visit
+      currentMatches: List[String]  // list of current matching tags
     ): List[String] = {
       if (nodeQueue.isEmpty) currentMatches
       else {
@@ -81,21 +82,28 @@ object OpcController {
           )
 
           // check for match
-          currentMatches // TODO: append tag if curNode is a match
-        }).recover({
-          case e: Exception => log.error("Error while traversing opc heirarchy: " + e)
-          currentMatches
-        }).get
+          val tag = curNode.getIdentifier.toString
+          if (whitelist.findFirstIn(tag).isEmpty) // tag does not match
+            currentMatches
+          else { // tag does match
+            log.info("adding tag = " + tag + " to match list.")
+            tag +: currentMatches
+          } 
+        }).recover({case e: Exception => {
+            log.error("Error while traversing opc heirarchy: " + e)
+            currentMatches
+        }}).get
         
         // recurse
         recurseTags(nodeQueue, updatedMatches)
       }
     }
     val matches: List[String] = recurseTags(Queue(Identifiers.RootFolder), List())
+    val tags = if (blacklist.toString.isEmpty) matches else matches.filter(blacklist.findFirstIn(_).isEmpty)
 
     // TODO: actually populate this with a toDevice method
     OpcConfig.Subscriptions(
-      matches.map(tag => OpcConfig.Subscriptions.Subscription(tag, tag)) // should be (tag, toDevice(tag))
+      tags.map(tag => OpcConfig.Subscriptions.Subscription(tag, tag)) // should be (tag, toDevice(tag))
     )
   }
 
@@ -112,14 +120,16 @@ object OpcController {
       val whitelistRegex = tagFilters.whitelist.mkString("|").r
       val blacklistRegex = tagFilters.blacklist.mkString("|").r
       OpcConnection.synchronized {
-        OpcConnection.client.get.connect.get // synchronous connection
         createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get)
       }
     })
 
-    if (newSubscriptions.isSuccess) 
+    if (newSubscriptions.isSuccess && !newSubscriptions.get.list.isEmpty) {
+      log.info("Successfully created {} new subscription(s). Sending now...", newSubscriptions.get.list.length)
       IofogConnection.sendWSMessage(configProtocol +: subscriptionsSubmission +: newSubscriptions.get.toByteArray)
-    else 
+    } else if (newSubscriptions.isFailure)
       newSubscriptions.recover({ case e: Exception => log.error("Could not update subscriptions: " + e)})
+    else
+      log.info("No new subscriptions found.")
   }
 }

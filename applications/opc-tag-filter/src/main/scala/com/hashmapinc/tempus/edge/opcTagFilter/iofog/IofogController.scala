@@ -20,7 +20,6 @@ object IofogController {
    *
    * @param messages - list of received messages
    */
-  @Override
   def onMessages(
     messages: java.util.List[IOMessage]
   ): Unit = {

@@ -2,7 +2,8 @@ package com.hashmapinc.tempus.edge.opcTagFilter
 
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.opcTagFilter.iofog.{IofogConnection, IofogController}
+import com.hashmapinc.tempus.edge.opcTagFilter.iofog.IofogConnection
+import com.hashmapinc.tempus.edge.opcTagFilter.opc.OpcConnection
 
 /**
  * Driver for the overall edge application
@@ -21,6 +22,7 @@ object Driver {
     log.info("CONTAINERID = " + Config.CONTAINER_ID)
 
     Config.updateConfigs
+    OpcConnection.updateClient
     
     log.info("Connecting to iofog...")
     IofogConnection.connect

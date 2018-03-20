@@ -16,7 +16,6 @@ import org.eclipse.milo.opcua.stack.core.types.structured.BrowseResult
 import org.eclipse.milo.opcua.stack.core.types.structured.ReferenceDescription
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint
 
-
 import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes, OpcConfig}
 import com.hashmapinc.tempus.edge.opcTagFilter.Config
 import com.hashmapinc.tempus.edge.opcTagFilter.iofog.IofogConnection
@@ -61,27 +60,40 @@ object OpcController {
     ): List[String] = {
       if (nodeQueue.isEmpty) currentMatches
       else {
+        // browse current node
         val curNode = nodeQueue.dequeue
-        val browseDesc = new BrowseDescription(
-          curNode,
-          BrowseDirection.Forward,
-          Identifiers.References,
-          true,
-          uint(NodeClass.Object.getValue() | NodeClass.Variable.getValue()),
-          uint(BrowseResultMask.All.getValue())
-        )
-        val browseResult = opcClient.browse(browseDesc).get
-        recurseTags(nodeQueue, currentMatches)
+        val updatedMatches: List[String] = Try({
+          val browseDesc = new BrowseDescription(
+            curNode,
+            BrowseDirection.Forward,
+            Identifiers.References,
+            true,
+            uint(NodeClass.Object.getValue() | NodeClass.Variable.getValue()),
+            uint(BrowseResultMask.All.getValue())
+          )
+          val browseResult = opcClient.browse(browseDesc).get
+
+          // add next search layer to the queue
+          browseResult.getReferences.map(ref => 
+            ref.getNodeId().local().ifPresent(refNodeId => 
+              nodeQueue.enqueue(refNodeId)
+            )
+          )
+
+          // check for match
+          currentMatches // TODO: append tag if curNode is a match
+        }).getOrElse(currentMatches)
+        
+        // recurse
+        recurseTags(nodeQueue, updatedMatches)
       }
     }
     val matches: List[String] = recurseTags(Queue(Identifiers.RootFolder), List())
 
-    OpcConfig.Subscriptions(List(
-      OpcConfig.Subscriptions.Subscription("tag0", "deviceA"),
-      OpcConfig.Subscriptions.Subscription("tag1", "deviceA"),
-      OpcConfig.Subscriptions.Subscription("tag2", "deviceB"),
-      OpcConfig.Subscriptions.Subscription("tag3", "deviceC")
-    ))
+    // TODO: actually populate this with a toDevice method
+    OpcConfig.Subscriptions(
+      matches.map(tag => OpcConfig.Subscriptions.Subscription(tag, tag)) // should be (tag, toDevice(tag))
+    )
   }
 
   /** This function drives the subscription updating process

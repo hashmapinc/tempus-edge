@@ -20,7 +20,11 @@ message OpcConfig {
   TagFilters tag_filters = 3;
 
   // define root from which to start BFS searching of tags
-  string tag_root = 4;
+  message TagRoot {
+    int32 namespace = 1;
+    string name = 2;
+  }
+  TagRoot tag_root = 4;
 
   // define device mapping regex's (regex -> device)
   message DeviceMap {

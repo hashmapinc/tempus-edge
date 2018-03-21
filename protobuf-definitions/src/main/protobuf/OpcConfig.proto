@@ -19,12 +19,15 @@ message OpcConfig {
   }
   TagFilters tag_filters = 3;
 
+  // define root from which to start BFS searching of tags
+  string tag_root = 4;
+
   // define device mapping regex's (regex -> device)
   message DeviceMap {
     string pattern = 1;
     string device = 2;
   }
-  repeated DeviceMap device_maps = 4;
+  repeated DeviceMap device_maps = 5;
 
   // define subscriptions
   message Subscriptions {
@@ -34,5 +37,5 @@ message OpcConfig {
     }
     repeated Subscription list = 1;
   }
-  Subscriptions subs = 5;
+  Subscriptions subs = 6;
 }

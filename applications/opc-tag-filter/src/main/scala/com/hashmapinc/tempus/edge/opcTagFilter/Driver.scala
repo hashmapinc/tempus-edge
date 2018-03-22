@@ -21,9 +21,11 @@ object Driver {
     log.info("SELFNAME = " + System.getenv("SELFNAME"))
     log.info("CONTAINERID = " + Config.CONTAINER_ID)
 
-    Config.updateConfigs                // load initial configs.
-    OpcConnection.updateClient          // init client connection.
-    OpcController.updateSubscriptions   // look for subscriptions.
+    Config.updateConfigs                  // load initial configs.
+    if (Config.trackConfig.isDefined) {
+      OpcConnection.updateClient          // init client connection.
+      OpcController.updateSubscriptions   // look for subscriptions.
+    }
       
     log.info("Connecting to iofog...")
     IofogConnection.connect

@@ -28,7 +28,7 @@ object Config {
    * This function updates the trackConfig
    */
   def updateConfigs: Unit = {
-    log.info("Attempting initial load of trackConfig from " + PATH_TO_TRACK_CONFIG)
+    log.info("Attempting load of trackConfig from " + PATH_TO_TRACK_CONFIG)
 
     // update configs
     trackConfig = loadConfigs(PATH_TO_TRACK_CONFIG)

@@ -27,20 +27,20 @@ object OpcController {
   private val configProtocol = MessageProtocols.CONFIG.value.toByte
   private val subscriptionsSubmission = ConfigMessageTypes.OPC_SUBSCRIPTIONS_SUBMISSION.value.toByte
 
-  /** This function returns the first deviceName that tag matches the pattern of.
+  /** This function returns the first deviceName match in deviceMaps on nodeId
    *
-   *  @param tag - string value to check for matches
-   *  @param deviceMaps  - OpcConfig.DeviceMaps object for mapping string matches to device names
+   *  @param nodeId       - string value to check for matches
+   *  @param deviceMaps   - OpcConfig.DeviceMaps object for mapping string matches to device names
    *
-   *  @return deviceName - string value of the matching deviceName 
+   *  @return deviceName  - string value of the matching deviceName 
    */
   def getDeviceName(
-    tag: String,
+    nodeId: String,
     deviceMaps: Seq[OpcConfig.DeviceMap]
   ): String = {
     // get all matching device names
     val deviceName = deviceMaps.flatMap(dMap => {
-      if (dMap.pattern.r.findFirstIn(tag).isDefined) Option(dMap.device) else None
+      if (dMap.pattern.r.findFirstIn(nodeId).isDefined) Option(dMap.deviceName) else None
     })
 
     // return "" if no match found, otherwise return first match
@@ -49,30 +49,32 @@ object OpcController {
 
   /** This function creates subscriptions from given regexs and opc client
    *
-   *  @param whitelist - Regex that tags must match to be a subscription
-   *  @param blacklist - Regex that tags must not match to be a subscription
+   *  @param whitelist  - Regex that tags must match to be a subscription
+   *  @param blacklist  - Regex that tags must not match to be a subscription
+   *  @param tagRoot    - NodeId root to begin tag BFS from
    *  @param opcClient  - milo OPC UA client to use for finding tags.
    *
    *  @return subscriptions - OpcConfig.Subscriptions protobuf object with new subscriptions
    */
   def createSubscriptions(
-    whitelist: Regex,
-    blacklist: Regex,
-    opcClient: OpcUaClient
+    whitelist:  Regex,
+    blacklist:  Regex,
+    tagRoot:    NodeId,
+    opcClient:  OpcUaClient
   ): OpcConfig.Subscriptions = {
     log.info("Creating subscriptions...")
     opcClient.connect.get // connect 
 
     @scala.annotation.tailrec
     def recurseTags(
-      nodeQueue: Queue[NodeId],     // queue holding the nodes to visit
-      currentMatches: List[String]  // list of current matching tags
-    ): List[String] = {
+      nodeQueue:      Queue[NodeId],            // queue holding the nodes to visit
+      currentMatches: List[OpcConfig.OpcNode]   // list of current matching tags
+    ): List[OpcConfig.OpcNode] = {
       if (nodeQueue.isEmpty) currentMatches
       else {
         // browse current node
         val curNode = nodeQueue.dequeue
-        val updatedMatches: List[String] = Try({
+        val updatedMatches: List[OpcConfig.OpcNode] = Try({
           val browseDesc = new BrowseDescription(
             curNode,
             BrowseDirection.Forward,
@@ -91,12 +93,12 @@ object OpcController {
           )
 
           // check for match
-          val tag = curNode.getIdentifier.toString
-          if (whitelist.findFirstIn(tag).isEmpty) // tag does not match
+          val curID = curNode.getIdentifier.toString
+          if (whitelist.findFirstIn(curID).isEmpty) // id does not match
             currentMatches
-          else { // tag does match
-            log.info("adding tag = " + tag + " to match list.")
-            tag +: currentMatches
+          else {                                    // id does match
+            log.info("adding node with id = " + curID + " to match list.")
+            OpcConfig.OpcNode(curNode.getNamespaceIndex.intValue, curID) +: currentMatches
           } 
         }).recover({case e: Exception => {
             log.error("Error while traversing opc heirarchy: " + e)
@@ -107,14 +109,17 @@ object OpcController {
         recurseTags(nodeQueue, updatedMatches)
       }
     }
-    val matches: List[String] = recurseTags(Queue(Identifiers.RootFolder), List())
-    val tags = if (blacklist.toString.isEmpty) matches else matches.filter(blacklist.findFirstIn(_).isEmpty)
+    val whitelistedNodes: List[OpcConfig.OpcNode] = recurseTags(Queue(tagRoot), List())
+    val matchingNodes = if 
+        (blacklist.toString.isEmpty) whitelistedNodes 
+      else 
+        whitelistedNodes.filter(node => blacklist.findFirstIn(node.id).isEmpty)
 
     // create subs
     val deviceMaps = Config.trackConfig.get.getOpcConfig.deviceMaps
     OpcConfig.Subscriptions(
-      tags.map(tag => 
-        OpcConfig.Subscriptions.Subscription(tag, getDeviceName(tag, deviceMaps))
+      matchingNodes.map(node => 
+        OpcConfig.Subscriptions.Subscription(Option(node), getDeviceName(node.id, deviceMaps))
       )
     )
   }
@@ -131,17 +136,27 @@ object OpcController {
       val tagFilters = Config.trackConfig.get.getOpcConfig.getTagFilters
       val whitelistRegex = tagFilters.whitelist.mkString("|").r
       val blacklistRegex = (".*\\.\\_.*" +: tagFilters.blacklist).mkString("|").r // add regex to filter out any system tags
+
+      // create tag root nodeId
+      val root = Try({
+        val rootNode = Config.trackConfig.get.getOpcConfig.tagRoot
+        if (rootNode.isEmpty) Identifiers.RootFolder else new NodeId(rootNode.get.namespace, rootNode.get.id)
+      }).recover({ case e: Exception => {
+        log.error("Could not create tag root nodeId. Error: " + e)
+        Identifiers.RootFolder // use opc root as default
+      }}).get
+
       OpcConnection.synchronized {
         try 
-          createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get) 
+          createSubscriptions(whitelistRegex, blacklistRegex, root, OpcConnection.client.get) 
         catch {
-          case e: Exception => createSubscriptions(whitelistRegex, blacklistRegex, OpcConnection.client.get)
+          case e: Exception => createSubscriptions(whitelistRegex, blacklistRegex, root, OpcConnection.client.get)
         }
       }
     })
 
-    if (newSubscriptions.isSuccess && !newSubscriptions.get.list.isEmpty) {
-      log.info("Successfully created {} new subscription(s). Sending now...", newSubscriptions.get.list.length)
+    if (newSubscriptions.isSuccess && !newSubscriptions.get.nodes.isEmpty) {
+      log.info("Successfully created {} new subscription(s). Sending now...", newSubscriptions.get.nodes.length)
       IofogConnection.sendWSMessage(configProtocol +: subscriptionsSubmission +: newSubscriptions.get.toByteArray)
     } else if (newSubscriptions.isFailure)
       newSubscriptions.recover({ case e: Exception => log.error("Could not update subscriptions: " + e)})

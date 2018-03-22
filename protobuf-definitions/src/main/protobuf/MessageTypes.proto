@@ -7,12 +7,12 @@ package com.hashmapinc.tempus.edge.proto;
 //=============================================================================
 // Define config message types
 enum ConfigMessageTypes {
-  UPDATE_ALERT = 0;               // alerts a container that new configs are available
-  TRACK_CONFIG_SUBMISSION = 1;    // submits a new track config to a container
-  TRACK_METADATA_SUBMISSION = 2;  // submits new track metadata to a container
-  MQTT_CONFIG_SUBMISSION = 3;     // submits new mqtt configs to a container
-  OPC_CONFIG_SUBMISSION = 4;      // submits new opc configs to a container
-  OPC_SUBSCRIPTIONS_SUBMISSION = 5;      // submits new opc subscriptions to a container
+  UPDATE_ALERT = 0;                   // alerts a container that new configs are available
+  TRACK_CONFIG_SUBMISSION = 1;        // submits a new track config to a container
+  TRACK_METADATA_SUBMISSION = 2;      // submits new track metadata to a container
+  MQTT_CONFIG_SUBMISSION = 3;         // submits new mqtt configs to a container
+  OPC_CONFIG_SUBMISSION = 4;          // submits new opc configs to a container
+  OPC_SUBSCRIPTIONS_SUBMISSION = 5;   // submits new opc subscriptions to a container
 }
 
 // Define data message types

@@ -19,20 +19,27 @@ message OpcConfig {
   }
   TagFilters tag_filters = 3;
 
+  // Define an OPC Node
+  message OpcNode {
+    int32   namespace = 1;
+    string  id = 2;
+  }
+  OpcNode tag_root = 4; // root from which to start BFS searching of tags
+
   // define device mapping regex's (regex -> device)
   message DeviceMap {
     string pattern = 1;
-    string device = 2;
+    string device_name = 2;
   }
-  repeated DeviceMap device_maps = 4;
+  repeated DeviceMap device_maps = 5;
 
   // define subscriptions
   message Subscriptions {
     message Subscription {
-      string tag = 1;
-      string device = 2;
+      OpcNode node = 1;
+      string  device_name = 2;
     }
-    repeated Subscription list = 1;
+    repeated Subscription nodes = 1;
   }
-  Subscriptions subs = 5;
+  Subscriptions subs = 6;
 }

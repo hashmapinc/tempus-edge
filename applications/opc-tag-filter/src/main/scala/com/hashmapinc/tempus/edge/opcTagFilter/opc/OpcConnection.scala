@@ -18,7 +18,7 @@ import com.hashmapinc.tempus.edge.opcTagFilter.Config
 import com.hashmapinc.tempus.edge.proto.OpcConfig
 
 object OpcConnection {
-  private val logger = Logger(getClass())
+  private val log = Logger(getClass())
 
   //create client
   var client: Option[OpcUaClient] = None
@@ -33,7 +33,7 @@ object OpcConnection {
     opcEndpoint: String,
     securityType: OpcConfig.SecurityType
   ): OpcUaClientConfig = {
-    logger.info("creating opc client configuration...")
+    log.info("creating opc client configuration...")
     
     //=========================================================================
     // security configs
@@ -42,13 +42,13 @@ object OpcConnection {
     if (!securityTempDir.exists() && !securityTempDir.mkdirs()) {
       throw new Exception("unable to create security dir: " + securityTempDir)
     }
-    logger.info("security temp dir: {}", securityTempDir.getAbsolutePath())
+    log.info("security temp dir: {}", securityTempDir.getAbsolutePath())
 
     // TODO: Implement other securityPolicy options
     val securityPolicy = 
       if (securityType == OpcConfig.SecurityType.NONE) SecurityPolicy.None
       else {
-        logger.error("could not implement securityType: " + securityType)
+        log.error("could not implement securityType: " + securityType)
         throw new Exception("unable to implement securityType: " + securityType)
       }
 
@@ -63,7 +63,7 @@ object OpcConnection {
       case e: Exception => {
         // try the explicit discovery endpoint as well
         val discoveryUrl = opcEndpoint + "/discovery"
-        logger.info("Trying explicit discovery URL: {}", discoveryUrl)
+        log.info("Trying explicit discovery URL: {}", discoveryUrl)
         Success(UaTcpStackClient.getEndpoints(discoveryUrl).get)
       }
     })
@@ -72,7 +72,7 @@ object OpcConnection {
       filter(e => e.getSecurityPolicyUri().equals(securityPolicy.getSecurityPolicyUri())).
       findFirst().orElseThrow(()=> new Exception("no desired endpoints returned"))
 
-    logger.info("Using endpoint: {} [{}]", endpoint.getEndpointUrl(), securityPolicy)
+    log.info("Using endpoint: {} [{}]", endpoint.getEndpointUrl(), securityPolicy)
     //=========================================================================
 
     // return config
@@ -98,7 +98,7 @@ object OpcConnection {
     opcEndpoint: String,
     securityType: OpcConfig.SecurityType
   ): OpcUaClient = {
-    logger.info("creating new opc client..")
+    log.info("creating new opc client..")
     new OpcUaClient(getClientConfig(opcEndpoint, securityType))
   }
 
@@ -110,25 +110,28 @@ object OpcConnection {
    *  Config.OPC_RECONN_DELAY mSeconds until it succeeds.
    */
   def updateClient: Unit = {
-    var updatedClient = Try({
-      val endpoint = Config.trackConfig.get.getOpcConfig.endpoint
-      val securityType = Config.trackConfig.get.getOpcConfig.securityType
-      Option(createOpcClient(endpoint, securityType))
-    })
+    val endpoint      = Try(Config.trackConfig.get.getOpcConfig.endpoint).getOrElse("")
+    val securityType  = Try(Config.trackConfig.get.getOpcConfig.securityType).getOrElse(OpcConfig.SecurityType.NONE)
 
-    while (updatedClient.isFailure) { // TODO: this feels not Scala-y. Find a way to do this elegantly
-      logger.error("unable to update opc client. Will retry in {} milliseconds...", Config.OPC_RECONN_DELAY)
-      Thread.sleep(Config.OPC_RECONN_DELAY)
-      updatedClient = Try({
-        val endpoint = Config.trackConfig.get.getOpcConfig.endpoint
-        val securityType = Config.trackConfig.get.getOpcConfig.securityType
-        Option(createOpcClient(endpoint, securityType))
-      })
-    }
-    
-    logger.info("Successfully updated client.")
-    this.synchronized {
-      client = updatedClient.getOrElse(None)
+    if (endpoint.isEmpty)
+      log.error("No OPC endpoint defined. Cannot create opc client. Will retry on new configuration.")
+    else {
+      var updatedClient = Try(Option(createOpcClient(endpoint, securityType)))
+
+      while (updatedClient.isFailure) { // TODO: this feels not Scala-y. Find a way to do this elegantly
+        log.error("unable to update opc client. Will retry in {} milliseconds...", Config.OPC_RECONN_DELAY)
+        Thread.sleep(Config.OPC_RECONN_DELAY)
+        updatedClient = Try({
+          val endpoint = Config.trackConfig.get.getOpcConfig.endpoint
+          val securityType = Config.trackConfig.get.getOpcConfig.securityType
+          Option(createOpcClient(endpoint, securityType))
+        })
+      }
+      
+      log.info("Successfully updated client.")
+      this.synchronized {
+        client = updatedClient.getOrElse(None)
+      }
     }
   }
 }

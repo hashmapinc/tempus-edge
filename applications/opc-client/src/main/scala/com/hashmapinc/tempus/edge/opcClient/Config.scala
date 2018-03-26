@@ -21,8 +21,9 @@ object Config {
   private val selfname = System.getenv("SELFNAME")
   val CONTAINER_ID = if(selfname == null) "" else selfname
 
-  // OPC reconnection delay
-  val OPC_RECONN_DELAY = 10000L // 10 seconds between reconnection attempts
+  // OPC settings
+  val OPC_RECONN_DELAY    = 10000L // 10 seconds between reconnection attempts
+  val DEFAULT_UPDATE_FREQ = 10000L // 10 seconds between subscription polling
 
   /**
    * This function updates the trackConfig

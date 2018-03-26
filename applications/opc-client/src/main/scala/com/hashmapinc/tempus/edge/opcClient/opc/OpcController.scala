@@ -139,7 +139,7 @@ object OpcController {
     opcClient.connect.get
 
     // subscribe
-    val subscription = opcClient.getSubscriptionManager.createSubscription(1000.0).get()
+    val subscription = opcClient.getSubscriptionManager.createSubscription(1000.0).get
     val subs = subscription.createMonitoredItems(
       TimestampsToReturn.Both,
       subRequests.asJava,
@@ -148,7 +148,7 @@ object OpcController {
 
     // report failed subs
     subs.asScala.filter(_.getStatusCode.isBad).foreach(badSub =>
-      log.error("Could not subscribe the following subRequest: " + badSub)
+      log.error("Could not subscribe the following node: " + badSub.getReadValueId.getNodeId)
     )
   }
 
@@ -163,7 +163,7 @@ object OpcController {
     Try({
       // gather new subscriptions
       val trackConfig = Config.trackConfig.get
-      val subRequests: List[MonitoredItemCreateRequest] = getSubscriptionRequests(trackConfig)
+      val subRequests = getSubscriptionRequests(trackConfig)
 
       OpcConnection synchronized {
         // synchronously connect client 

@@ -27,7 +27,10 @@ object OpcController {
   private val configProtocol = MessageProtocols.CONFIG.value.toByte
   private val subscriptionsSubmission = ConfigMessageTypes.OPC_SUBSCRIPTIONS_SUBMISSION.value.toByte
 
-  /** This function returns the first deviceName match in deviceMaps on nodeId
+  /** This function generates a device name for a given nodeId from a series of deviceMaps.
+   *
+   *  The first matched deviceMap will be used to generate a deviceName from a nodeId.
+   *  If no matches exist, the nodeId will be used as the deviceName.
    *
    *  @param nodeId       - string value to check for matches
    *  @param deviceMaps   - OpcConfig.DeviceMaps object for mapping string matches to device names
@@ -43,8 +46,8 @@ object OpcController {
       if (dMap.pattern.r.findFirstIn(nodeId).isDefined) Option(dMap.deviceName) else None
     })
 
-    // return "" if no match found, otherwise return first match
-    if (deviceName.isEmpty) "" else deviceName(0)
+    // return nodeId if no match found, otherwise return first match
+    if (deviceName.isEmpty) nodeId else deviceName(0)
   }
 
   /** This function creates subscriptions from given regexs and opc client

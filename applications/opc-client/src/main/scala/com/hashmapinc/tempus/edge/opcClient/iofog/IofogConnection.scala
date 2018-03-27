@@ -1,6 +1,7 @@
 package com.hashmapinc.tempus.edge.opcClient.iofog
 
 import com.iotracks.api.IOFogClient
+import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
 import com.hashmapinc.tempus.edge.opcClient.Config
@@ -36,5 +37,23 @@ object IofogConnection {
     } catch {
       case e: Exception => log.error("IoFog websocket error: " + e.toString)
     }
+  }
+
+  /**
+   * This function sends a message to the iofog message stream.
+   *
+   * @param msgContent - Byte array holding the msgContent to be sent
+   */
+  def sendWSMessage(
+    msgContent: Array[Byte]
+  ): Unit = {
+    log.info("Writing new message to iofog...")
+
+    // create message
+    val msg = new IOMessage
+    msg.setContentData(msgContent)
+
+    // send message
+    client.sendMessageToWebSocket(msg)
   }
 }

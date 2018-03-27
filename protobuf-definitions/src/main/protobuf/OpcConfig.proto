@@ -42,4 +42,7 @@ message OpcConfig {
     repeated Subscription nodes = 1;
   }
   Subscriptions subs = 6;
+
+  // define subscription monitoring frequency
+  uint32 subs_update_freq = 7;
 }

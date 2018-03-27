@@ -54,8 +54,8 @@ object IofogController {
   /**
    * This function saves trackConfig to disc
    *
-   * @param trackConfig - TrackConfig protobuf object containing new configs
-   * @param pathToConfig - String value holding path to the config.pb file
+   * @param trackConfig   - TrackConfig protobuf object containing new configs
+   * @param pathToConfig  - String value holding path to the config.pb file
    */
   def saveTrackConfig(
     trackConfig: TrackConfig,
@@ -75,12 +75,12 @@ object IofogController {
    * If a newTrackConfig exists, it is used. If not, for every other new*Config
    * passed to this method, that config component of the old config is overwritten.
    *
-   * @param oldTrackConfig - TrackConfig protobuf object containing old configs
+   * @param oldTrackConfig    - TrackConfig protobuf object containing old configs
    *
-   * @param newTrackConfig - TrackConfig protobuf object containing new configs
-   * @param newTrackMetadata - TrackMetadata protobuf object containing new track metadata
-   * @param newMqttConfig - MqttConfig protobuf object containing new mqtt configs
-   * @param newOpcConfig - OpcConfig protobuf object containing new opc configs
+   * @param newTrackConfig    - TrackConfig protobuf object containing new configs
+   * @param newTrackMetadata  - TrackMetadata protobuf object containing new track metadata
+   * @param newMqttConfig     - MqttConfig protobuf object containing new mqtt configs
+   * @param newOpcConfig      - OpcConfig protobuf object containing new opc configs
    */
   def mergeConfigs(
     oldTrackConfig:   TrackConfig,
@@ -108,8 +108,8 @@ object IofogController {
    * This function is not exception handled. It is intended to be called inside
    * of a scala.util.Try and handled appropriately by the caller.
    *
-   * @param json - JsonObject holding the track metadata 
-   * @return newConfig - TrackMetadata object Option parsed from json
+   * @param json        - JsonObject holding the track metadata 
+   * @return newConfig  - TrackMetadata object Option parsed from json
    */
   def jsonToTrackMetadata(
     json: javax.json.JsonObject
@@ -125,8 +125,8 @@ object IofogController {
    * This function is not exception handled. It is intended to be called inside
    * of a scala.util.Try and handled appropriately by the caller.
    *
-   * @param json - JsonObject holding the opc config data 
-   * @return newConfig - MqttConfig object Option parsed from json
+   * @param json        - JsonObject holding the opc config data 
+   * @return newConfig  - MqttConfig object Option parsed from json
    */
   def jsonToMqttConfig(
     json: javax.json.JsonObject
@@ -142,8 +142,8 @@ object IofogController {
    * This function is not exception handled. It is intended to be called inside
    * of a scala.util.Try and handled appropriately by the caller.
    *
-   * @param json - JsonObject holding the track metadata 
-   * @return newConfig - OpcConfig object Option parsed from json
+   * @param json        - JsonObject holding the track metadata 
+   * @return newConfig  - OpcConfig object Option parsed from json
    */
   def jsonToOpcConfig(
     json: javax.json.JsonObject
@@ -206,7 +206,13 @@ object IofogController {
       (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, Option(MqttConfig.parseFrom(msgPayload)), EMPTY_OPC_CONFIG)
     else if (msgType == ConfigMessageTypes.OPC_CONFIG_SUBMISSION.value.toByte)
       (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, EMPTY_MQTT_CONFIG, Option(OpcConfig.parseFrom(msgPayload)))
-    else {
+    else if (msgType == ConfigMessageTypes.OPC_SUBSCRIPTIONS_SUBMISSION.value.toByte) {
+      val subs = OpcConfig.Subscriptions.parseFrom(msgPayload)
+      val newOpcConfig = Try({
+        loadTrackConfig(PATH_TO_TRACK_CONFIG).getOpcConfig.withSubs(subs)
+      }).getOrElse(OpcConfig().withSubs(subs))
+      (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, EMPTY_MQTT_CONFIG, Option(newOpcConfig))
+    } else {
       log.error("Could not parse config message of type {}", msgType)
       (EMPTY_TRACK_CONFIG, EMPTY_TRACK_METADATA, EMPTY_MQTT_CONFIG, EMPTY_OPC_CONFIG)
     }

@@ -59,7 +59,7 @@ object OpcController {
     val identifier  = node.getIdentifier.toString
     val deviceName  = Try({
       val subEntry = Config.trackConfig.get.getOpcConfig.getSubs.nodes.filter(_.getNode.id == identifier)
-      if (subEntry.isEmpty) identifier else subEntry(0).getNode.id
+      if (subEntry.isEmpty) identifier else subEntry(0).deviceName
     }).getOrElse(identifier)
 
     // extract time information

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package com.hashmapinc.tempus.edge.proto;
+
+import "OpcConfig.proto";
+
+// Define an OPC message from an OPC client
+message OpcMessage {
+  // define info about the OPC entity 
+  OpcConfig.OpcNode node        = 1;
+  string            device_name = 2;
+
+  // datetime
+  string source_datetime = 3;
+  string server_datetime = 4;
+
+  // value
+  oneof value {
+    string  value_string  = 5;
+    int32   value_int32   = 6;
+    int64   value_int64   = 7;
+    float   value_float   = 8;
+    double  value_double  = 9;
+    bool    value_boolean = 10;
+  }
+}

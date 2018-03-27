@@ -3,6 +3,7 @@ package com.hashmapinc.tempus.edge.opcClient.opc
 import collection.JavaConverters._
 import scala.util.Try
 import java.util.function.BiConsumer
+import java.util.concurrent.ExecutionException
 
 import com.typesafe.scalalogging.Logger
 import org.eclipse.milo.opcua.sdk.client.api.subscriptions.UaMonitoredItem
@@ -18,18 +19,73 @@ import org.eclipse.milo.opcua.stack.core.types.structured.MonitoredItemCreateReq
 import org.eclipse.milo.opcua.stack.core.types.structured.MonitoringParameters
 import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId
 
-import com.hashmapinc.tempus.edge.proto.TrackConfig
+import com.hashmapinc.tempus.edge.proto.{TrackConfig, OpcConfig, OpcMessage, MessageProtocols, DataMessageTypes}
 import com.hashmapinc.tempus.edge.opcClient.Config
+import com.hashmapinc.tempus.edge.opcClient.iofog.IofogConnection
 
 /** 
- *  This object holds the logic for handlign OPC events
+ *  This object holds the logic for handling OPC events
  */
 object OpcController {
   private val log = Logger(getClass())
 
+  // Retry if this err msg is encountered
+  val RECOVERABE_ERR_MSG = "UaServiceFaultException: status=Bad_SessionIdInvalid, message=The session id is not valid."
+
   // anonymous function used to wire onNewSubscribedValue handler to new subscription value events in milo
   val onItemCreated: BiConsumer[UaMonitoredItem, Integer] = (item: UaMonitoredItem, id: Integer) => {
     item.setValueConsumer(onNewSubscribedValue)
+  }
+
+  /** This function parses a new OPC reading into an OpcMessage protobuf object
+   *
+   *  This function is not fault tolerant and should be error checked by the caller
+   *
+   *  To support multiple data types from opc, this function is on the longer side.
+   *  The logic is largely just ensuring the right value data type is serialized.
+   *
+   *  @param item     - UaMonitoredItem with a new value to handle
+   *  @param value    - DataValue that changed and must be handled
+   *
+   *  @return opcMsg  - OpcMessage protobuf object parsed from item and value
+   */
+  def serializeOpcMessage(
+    item: UaMonitoredItem, 
+    value: DataValue
+  ): OpcMessage = {
+    // extract node information
+    val node        = item.getReadValueId.getNodeId
+    val namespace   = node.getNamespaceIndex.intValue
+    val identifier  = node.getIdentifier.toString
+    val deviceName  = Try({
+      val subEntry = Config.trackConfig.get.getOpcConfig.getSubs.nodes.filter(_.getNode.id == identifier)
+      if (subEntry.isEmpty) identifier else subEntry(0).getNode.id
+    }).getOrElse(identifier)
+
+    // extract time information
+    val srcDatetime     = value.getSourceTime.getJavaDate.toString    
+    val serverDatetime  = value.getServerTime.getJavaDate.toString
+
+    // create OpcNode protobuf object
+    val protoNode = OpcConfig.OpcNode().withNamespace(namespace).withId(identifier)
+
+    // extract value and create OpcMessage
+    val opcMsg = (OpcMessage()
+      .withNode(protoNode)
+      .withDeviceName(deviceName)
+      .withSourceDatetime(srcDatetime)
+      .withServerDatetime(serverDatetime))
+
+    // extract value and return opcMessage with proper value
+    val valueType = value.getValue.getValue.getClass.toString
+    valueType match {
+      case "class java.lang.Integer" => opcMsg.withValueInt32(value.getValue.getValue.asInstanceOf[java.lang.Integer])
+      case "class java.lang.Long" =>    opcMsg.withValueInt64(value.getValue.getValue.asInstanceOf[java.lang.Long])
+      case "class java.lang.Float" =>   opcMsg.withValueFloat(value.getValue.getValue.asInstanceOf[java.lang.Float])
+      case "class java.lang.Double" =>  opcMsg.withValueDouble(value.getValue.getValue.asInstanceOf[java.lang.Double])
+      case "class java.lang.Boolean" => opcMsg.withValueBoolean(value.getValue.getValue.asInstanceOf[java.lang.Boolean])
+      case _ =>                         opcMsg.withValueString(value.getValue.getValue.toString) // put everything else into string format
+    }
   }
 
   /** This function handles new readings from subscribed OPC entities
@@ -45,7 +101,27 @@ object OpcController {
    *  @param value - DataValue that changed and must be handled
    */
   def onNewSubscribedValue: BiConsumer[UaMonitoredItem, DataValue] = (item: UaMonitoredItem, value: DataValue) => {
-    println("subscription value received: item={}, value={}", item.getReadValueId().getNodeId(), value.getValue())
+    log.info("Received new subscription value...")
+
+    Try({
+      // serialize item and value into protobuf object
+      val opcMsg = serializeOpcMessage(item, value)
+      log.info("New subscription value parsed to OPC Message: " + opcMsg.toString)
+      
+      // construct iofog message payload
+      val msgProtocol = MessageProtocols.DATA.value.toByte
+      val msgType     = DataMessageTypes.OPC.value.toByte
+      val payload     = msgProtocol +: msgType +: opcMsg.toByteArray
+
+      // send the message
+      IofogConnection.sendWSMessage(payload)
+
+    }).recover({
+      case e: Exception => {
+        log.error("Error handling message from node: " + item.getReadValueId.getNodeId)
+        log.error("Error: " + e)
+      }
+    })
   }
 
   /** This function constructs a milo-friendly list of sub requests
@@ -177,6 +253,12 @@ object OpcController {
         subscribe(subRequests, client)
       }
     }).recover({
+      case e: ExecutionException => {
+        if (e.getMessage == RECOVERABE_ERR_MSG)
+          updateSubscriptions // retry. The session should be good now; it refreshes on failure
+        else
+         log.error("Could not update subscrptions. Error: " + e)
+      }
       case e: Exception => log.error("Could not update subscriptions. Error: " + e)
     })
   }

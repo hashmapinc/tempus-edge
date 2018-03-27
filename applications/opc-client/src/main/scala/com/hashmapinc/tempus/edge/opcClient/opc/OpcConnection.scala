@@ -20,7 +20,7 @@ import com.hashmapinc.tempus.edge.proto.OpcConfig
 object OpcConnection {
   private val log = Logger(getClass())
 
-  //create client
+  // OPC client
   var client: Option[OpcUaClient] = None
   
   /**
@@ -29,7 +29,7 @@ object OpcConnection {
    * @param opcEndpoint - String holding the opc endpoint to connect to
    * @param securityType - SecurityType protobuf object describing the security to use
    */
-  def getClientConfig (
+  private def getClientConfig (
     opcEndpoint: String,
     securityType: OpcConfig.SecurityType
   ): OpcUaClientConfig = {
@@ -94,7 +94,7 @@ object OpcConnection {
    *
    * @return opcClient - new opc client
    */
-  def createOpcClient (
+  private def createOpcClient (
     opcEndpoint: String,
     securityType: OpcConfig.SecurityType
   ): OpcUaClient = {
@@ -110,39 +110,36 @@ object OpcConnection {
    *  Config.OPC_RECONN_DELAY mSeconds until it succeeds.
    */
   def updateClient: Unit = {
-    val endpoint      = Try(Config.trackConfig.get.getOpcConfig.endpoint).getOrElse("")
-    val securityType  = Try(Config.trackConfig.get.getOpcConfig.securityType).getOrElse(OpcConfig.SecurityType.NONE)
-
-    if (endpoint.isEmpty)
-      log.error("No OPC endpoint defined. Cannot create opc client. Will retry on new configuration.")
-    else {
-      var updatedClient = Try(Option(createOpcClient(endpoint, securityType)))
-
-      while (updatedClient.isFailure) { // TODO: this feels not Scala-y. Find a way to do this elegantly
-        log.error("unable to update opc client. Will retry in {} milliseconds...", Config.OPC_RECONN_DELAY)
-        Thread.sleep(Config.OPC_RECONN_DELAY)
-        updatedClient = Try({
-          val endpoint = Config.trackConfig.get.getOpcConfig.endpoint
-          val securityType = Config.trackConfig.get.getOpcConfig.securityType
-          Option(createOpcClient(endpoint, securityType))
-        })
+    this.synchronized {
+      // destroy the existing client if it exists
+      if (client.isDefined) {
+        client.get.getSubscriptionManager.clearSubscriptions
+        client.get.disconnect
       }
-      
-      log.info("Successfully updated client.")
-      this.synchronized {
+
+      // get client configuration
+      val endpoint      = Try(Config.trackConfig.get.getOpcConfig.endpoint).getOrElse("")
+      val securityType  = Try(Config.trackConfig.get.getOpcConfig.securityType).getOrElse(OpcConfig.SecurityType.NONE)
+
+      // create client
+      if (endpoint.isEmpty)
+        log.error("No OPC endpoint defined. Cannot create opc client. Will retry on new configuration.")
+      else {
+        var updatedClient = Try(Option(createOpcClient(endpoint, securityType)))
+
+        while (updatedClient.isFailure) { // TODO: this feels not Scala-y. Find a way to do this elegantly
+          log.error("unable to update opc client. Will retry in {} milliseconds...", Config.OPC_RECONN_DELAY)
+          Thread.sleep(Config.OPC_RECONN_DELAY)
+          updatedClient = Try({
+            val endpoint = Config.trackConfig.get.getOpcConfig.endpoint
+            val securityType = Config.trackConfig.get.getOpcConfig.securityType
+            Option(createOpcClient(endpoint, securityType))
+          })
+        }
+        
         client = updatedClient.getOrElse(None)
+        log.info("Successfully updated client.")
       }
     }
-  }
-
-  /**
-   * This function subscribs the opc client to the tag given
-   *
-   * @param tag - String value of the tag to subscribe to
-   */
-  def subscribe(
-    tag: String
-  ): Unit = {
-
   }
 }

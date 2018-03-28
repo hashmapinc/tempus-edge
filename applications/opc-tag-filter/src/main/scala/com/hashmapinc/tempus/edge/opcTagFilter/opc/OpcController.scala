@@ -26,6 +26,8 @@ object OpcController {
   // global vars
   private val configProtocol = MessageProtocols.CONFIG.value.toByte
   private val subscriptionsSubmission = ConfigMessageTypes.OPC_SUBSCRIPTIONS_SUBMISSION.value.toByte
+  val SYSTEM_NODE_REGEX_STRING = ".*\\.\\_.*"
+  val SYSTEM_NODE_REGEX = SYSTEM_NODE_REGEX_STRING.r
 
   /** This function generates a device name for a given nodeId from a series of deviceMaps.
    *
@@ -91,7 +93,9 @@ object OpcController {
           // add next search layer to the queue
           browseResult.getReferences.map(ref => 
             ref.getNodeId().local().ifPresent(refNodeId => 
-              nodeQueue.enqueue(refNodeId)
+              // add non-system nodes to the next search layer in the queue
+              if (SYSTEM_NODE_REGEX.findFirstIn(refNodeId.getIdentifier.toString).isEmpty) 
+                nodeQueue.enqueue(refNodeId)
             )
           )
 
@@ -138,7 +142,7 @@ object OpcController {
       // concat regex strings with '|' separator and create single regex for each tagFilter
       val tagFilters = Config.trackConfig.get.getOpcConfig.getTagFilters
       val whitelistRegex = tagFilters.whitelist.mkString("|").r
-      val blacklistRegex = (".*\\.\\_.*" +: tagFilters.blacklist).mkString("|").r // add regex to filter out any system tags
+      val blacklistRegex = (SYSTEM_NODE_REGEX_STRING +: tagFilters.blacklist).mkString("|").r // add regex to filter out any system tags
 
       // create tag root nodeId
       val root = Try({

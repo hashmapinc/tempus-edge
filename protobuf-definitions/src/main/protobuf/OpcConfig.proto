@@ -9,6 +9,9 @@ message OpcConfig {
   // define available security types
   enum SecurityType {
     NONE = 0;
+    BASIC128RSA15 = 1;
+    BASIC256 = 2;
+    BASIC256SHA256 = 3;
   }
   SecurityType security_type = 2; // security settings to use
 
@@ -45,4 +48,8 @@ message OpcConfig {
 
   // define subscription monitoring frequency
   uint32 subs_update_freq = 7;
+
+  // define identity
+  string client_identity = 8;
+  string client_password = 9;
 }

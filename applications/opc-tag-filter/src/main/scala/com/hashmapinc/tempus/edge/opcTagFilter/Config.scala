@@ -31,7 +31,9 @@ object Config {
     log.info("Attempting load of trackConfig from " + PATH_TO_TRACK_CONFIG)
 
     // update configs
-    trackConfig = loadConfigs(PATH_TO_TRACK_CONFIG)
+    this synchronized {
+      trackConfig = loadConfigs(PATH_TO_TRACK_CONFIG)
+    }
   }
 
   /**

@@ -24,34 +24,24 @@ object OpcConnection {
   var client: Option[OpcUaClient] = None
   
   /**
-   * Creates a opcUaClient configuration
+   * Creates an opcUaClient configuration
    *
-   * @param opcEndpoint - String holding the opc endpoint to connect to
-   * @param securityType - SecurityType protobuf object describing the security to use
+   * @param opcConf           - OpcConfig proto object with opc configuration to use
+   *
+   * @return opcClientConfig  - OpcUaClientConfig created from opcConf
    */
   def getClientConfig (
-    opcEndpoint: String,
-    securityType: OpcConfig.SecurityType
+    opcConf: OpcConfig
   ): OpcUaClientConfig = {
     log.info("creating opc client configuration...")
+
+    val opcEndpoint = opcConf.endpoint
     
     //=========================================================================
     // security configs
     //=========================================================================
-    val securityTempDir = new File(System.getProperty("java.io.tmpdir"), "security")
-    if (!securityTempDir.exists() && !securityTempDir.mkdirs()) {
-      throw new Exception("unable to create security dir: " + securityTempDir)
-    }
-    log.info("security temp dir: {}", securityTempDir.getAbsolutePath())
-
-    // TODO: Implement other securityPolicy options
-    val securityPolicy = 
-      if (securityType == OpcConfig.SecurityType.NONE) SecurityPolicy.None
-      else {
-        log.error("could not implement securityType: " + securityType)
-        throw new Exception("unable to implement securityType: " + securityType)
-      }
-
+    // get security policy
+    val securityPolicy = OpcSecurity.getSecurityPolicy(opcConf)
     //=========================================================================
 
     //=========================================================================
@@ -59,16 +49,16 @@ object OpcConnection {
     //=========================================================================
     val endpoints= Try({
       UaTcpStackClient.getEndpoints(opcEndpoint).get
-    }).recoverWith({
+    }).recover({
       case e: Exception => {
         // try the explicit discovery endpoint as well
         val discoveryUrl = opcEndpoint + "/discovery"
         log.info("Trying explicit discovery URL: {}", discoveryUrl)
-        Success(UaTcpStackClient.getEndpoints(discoveryUrl).get)
+        UaTcpStackClient.getEndpoints(discoveryUrl).get
       }
-    })
+    }).get
 
-    val endpoint = Arrays.stream(endpoints.get).
+    val endpoint = Arrays.stream(endpoints).
       filter(e => e.getSecurityPolicyUri().equals(securityPolicy.getSecurityPolicyUri())).
       findFirst().orElseThrow(()=> new Exception("no desired endpoints returned"))
 
@@ -88,18 +78,33 @@ object OpcConnection {
   /**
    * Creates a new opc client.
    *
-   * @param opcEndpoint - String holding the opc endpoint to connect to
-   * @param securityType - SecurityType protobuf object describing the 
-   *                       security to use
+   * @param opcConf    - OpcConfig proto object with opc configuration to use
    *
    * @return opcClient - new opc client
    */
   def createOpcClient (
-    opcEndpoint: String,
-    securityType: OpcConfig.SecurityType
+    opcConf: OpcConfig
   ): OpcUaClient = {
     log.info("creating new opc client..")
-    new OpcUaClient(getClientConfig(opcEndpoint, securityType))
+    new OpcUaClient(getClientConfig(opcConf))
+  }
+
+  /**
+   * recursion utility for retrying client updating
+   *
+   * @param updatedClient           - Try[OpcUaClient] from the previous caller
+   *
+   * @return successfulUpdateClient - OpcUaClient result of a Success in updateClient
+   */
+  @scala.annotation.tailrec
+  def recursiveUpdateClient(
+    updatedClient:  Try[OpcUaClient]
+  ): OpcUaClient = {
+    if (updatedClient.isSuccess) updatedClient.get else {
+      log.error("unable to update opc client. Will retry in {} milliseconds...", Config.OPC_RECONN_DELAY)
+      Thread.sleep(Config.OPC_RECONN_DELAY)
+      recursiveUpdateClient(Try(createOpcClient(Config.trackConfig.get.getOpcConfig)))
+    }
   }
 
   /**
@@ -107,30 +112,26 @@ object OpcConnection {
    *  opc configuration.
    *
    *  If client creation fails, updateClient will retry every 
-   *  Config.OPC_RECONN_DELAY mSeconds until it succeeds.
+   *  Config.OPC_RECONN_DELAY milliseconds until it succeeds.
    */
   def updateClient: Unit = {
-    val endpoint      = Try(Config.trackConfig.get.getOpcConfig.endpoint).getOrElse("")
-    val securityType  = Try(Config.trackConfig.get.getOpcConfig.securityType).getOrElse(OpcConfig.SecurityType.NONE)
-
-    if (endpoint.isEmpty)
-      log.error("No OPC endpoint defined. Cannot create opc client. Will retry on new configuration.")
-    else {
-      var updatedClient = Try(Option(createOpcClient(endpoint, securityType)))
-
-      while (updatedClient.isFailure) { // TODO: this feels not Scala-y. Find a way to do this elegantly
-        log.error("unable to update opc client. Will retry in {} milliseconds...", Config.OPC_RECONN_DELAY)
-        Thread.sleep(Config.OPC_RECONN_DELAY)
-        updatedClient = Try({
-          val endpoint = Config.trackConfig.get.getOpcConfig.endpoint
-          val securityType = Config.trackConfig.get.getOpcConfig.securityType
-          Option(createOpcClient(endpoint, securityType))
-        })
+    this.synchronized {
+      // destroy the existing client if it exists
+      if (client.isDefined) {
+        client.get.getSubscriptionManager.clearSubscriptions
+        client.get.disconnect
       }
-      
-      log.info("Successfully updated client.")
-      this.synchronized {
-        client = updatedClient.getOrElse(None)
+
+      // get latest local opcConfigs
+      val opcConf = Try(Config.trackConfig.get.getOpcConfig)
+
+      // if opcConfig exists and has an endpoint, let's connect!
+      if (opcConf.isFailure || opcConf.get.endpoint.isEmpty)
+        log.error("Could not update OPC client: no suitable OPC Configuration found. Will retry when new configs arrive.")
+      else {
+        val updatedClient = recursiveUpdateClient(Try(createOpcClient(opcConf.get)))
+        log.info("Successfully updated client.")
+        client = Option(updatedClient)
       }
     }
   }

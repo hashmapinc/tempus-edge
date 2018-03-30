@@ -2,7 +2,7 @@ package com.hashmapinc.tempus.edge.opcTagFilter.opc
 
 import java.io.File
 import java.util.Arrays
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient
 import org.eclipse.milo.opcua.sdk.client.api.config.{OpcUaClientConfig, OpcUaClientConfigBuilder}
@@ -35,18 +35,13 @@ object OpcConnection {
   ): OpcUaClientConfig = {
     log.info("creating opc client configuration...")
 
-    val opcEndpoint = opcConf.endpoint
-    
-    //=========================================================================
-    // security configs
-    //=========================================================================
     // get security policy
     val securityPolicy = OpcSecurity.getSecurityPolicy(opcConf)
-    //=========================================================================
 
     //=========================================================================
     // endpoint configs
     //=========================================================================
+    val opcEndpoint = opcConf.endpoint    
     val endpoints= Try({
       UaTcpStackClient.getEndpoints(opcEndpoint).get
     }).recover({
@@ -93,17 +88,20 @@ object OpcConnection {
    * recursion utility for retrying client updating
    *
    * @param updatedClient           - Try[OpcUaClient] from the previous caller
+   * @param remainingAttempts       - Int value of remaining retry attempts
    *
-   * @return successfulUpdateClient - OpcUaClient result of a Success in updateClient
+   * @return successfulUpdateClient - Try[OpcUaClient] result of updateClient attempt
    */
   @scala.annotation.tailrec
   def recursiveUpdateClient(
-    updatedClient:  Try[OpcUaClient]
-  ): OpcUaClient = {
-    if (updatedClient.isSuccess) updatedClient.get else {
-      log.error("unable to update opc client. Will retry in {} milliseconds...", Config.OPC_RECONN_DELAY)
+    updatedClient:      Try[OpcUaClient],
+    remainingAttempts:  Int
+  ): Try[OpcUaClient] = {
+    if (updatedClient.isSuccess || remainingAttempts < 1) updatedClient else {
+      log.error("Could not update OPC client. Received error: " + updatedClient.failed.get)
+      log.error("Will retry connection {} more time(s) in {} milliseconds...", remainingAttempts, Config.OPC_RECONN_DELAY)
       Thread.sleep(Config.OPC_RECONN_DELAY)
-      recursiveUpdateClient(Try(createOpcClient(Config.trackConfig.get.getOpcConfig)))
+      recursiveUpdateClient(Try(createOpcClient(Config.trackConfig.get.getOpcConfig)), remainingAttempts - 1)
     }
   }
 
@@ -129,9 +127,11 @@ object OpcConnection {
       if (opcConf.isFailure || opcConf.get.endpoint.isEmpty)
         log.error("Could not update OPC client: no suitable OPC Configuration found. Will retry when new configs arrive.")
       else {
-        val updatedClient = recursiveUpdateClient(Try(createOpcClient(opcConf.get)))
-        log.info("Successfully updated client.")
-        client = Option(updatedClient)
+        val client = recursiveUpdateClient(Try(createOpcClient(opcConf.get)), Config.OPC_RECONN_MAX_ATTEMPTS).toOption
+        if (client.isDefined)
+          log.info("OPC client successfully updated!")
+        else 
+          log.warn("OPC client update was unsuccessful. Will retry when new OPC configs arrive.")
       }
     }
   }

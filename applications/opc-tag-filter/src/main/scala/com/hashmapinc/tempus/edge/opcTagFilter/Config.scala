@@ -22,7 +22,8 @@ object Config {
   val CONTAINER_ID = if(selfname == null) "" else selfname
 
   // OPC reconnection delay
-  val OPC_RECONN_DELAY = 10000L // 10 seconds between reconnection attempts
+  val OPC_RECONN_DELAY = 10000L   // 10 seconds between reconnection attempts
+  val OPC_RECONN_MAX_ATTEMPTS = 5 // maximum of 5 reconnection attempts
 
   /**
    * This function updates the trackConfig

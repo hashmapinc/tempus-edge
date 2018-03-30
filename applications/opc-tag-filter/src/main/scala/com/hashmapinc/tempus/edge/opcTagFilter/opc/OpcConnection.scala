@@ -127,7 +127,7 @@ object OpcConnection {
       if (opcConf.isFailure || opcConf.get.endpoint.isEmpty)
         log.error("Could not update OPC client: no suitable OPC Configuration found. Will retry when new configs arrive.")
       else {
-        val client = recursiveUpdateClient(Try(createOpcClient(opcConf.get)), Config.OPC_RECONN_MAX_ATTEMPTS).toOption
+        client = recursiveUpdateClient(Try(createOpcClient(opcConf.get)), Config.OPC_RECONN_MAX_ATTEMPTS).toOption
         if (client.isDefined)
           log.info("OPC client successfully updated!")
         else 

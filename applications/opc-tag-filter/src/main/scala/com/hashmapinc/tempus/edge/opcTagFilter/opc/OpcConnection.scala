@@ -1,13 +1,10 @@
 package com.hashmapinc.tempus.edge.opcTagFilter.opc
 
 import java.io.File
-import java.util.Arrays
 import scala.util.Try
 
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient
 import org.eclipse.milo.opcua.sdk.client.api.config.{OpcUaClientConfig, OpcUaClientConfigBuilder}
-import org.eclipse.milo.opcua.sdk.client.api.identity.AnonymousProvider
-import org.eclipse.milo.opcua.stack.core.security.SecurityPolicy
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint
 import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription
@@ -24,25 +21,27 @@ object OpcConnection {
   var client: Option[OpcUaClient] = None
   
   /**
-   * Creates an opcUaClient configuration
+   *  Creates an opcUaClient configuration
    *
-   * @param opcConf           - OpcConfig proto object with opc configuration to use
+   *  This function is not fault tolerant. The caller should handle errors.
    *
-   * @return opcClientConfig  - OpcUaClientConfig created from opcConf
+   *  @param opcConf           - OpcConfig proto object with opc configuration to use
+   *
+   *  @return opcClientConfig  - OpcUaClientConfig created from opcConf
    */
   def getClientConfig (
     opcConf: OpcConfig
   ): OpcUaClientConfig = {
     log.info("creating opc client configuration...")
 
-    // get security policy
+    //=========================================================================
+    // setup endpoint
+    //=========================================================================
     val securityPolicy = OpcSecurity.getSecurityPolicy(opcConf)
+    val opcEndpoint = opcConf.endpoint   
 
-    //=========================================================================
-    // endpoint configs
-    //=========================================================================
-    val opcEndpoint = opcConf.endpoint    
-    val endpoints= Try({
+    // get all endpoints available at opcEndpoint that match the securityPolicy
+    val endpoints = Try({
       UaTcpStackClient.getEndpoints(opcEndpoint).get
     }).recover({
       case e: Exception => {
@@ -51,21 +50,26 @@ object OpcConnection {
         log.info("Trying explicit discovery URL: {}", discoveryUrl)
         UaTcpStackClient.getEndpoints(discoveryUrl).get
       }
-    }).get
+    }).get.filter(_.getSecurityPolicyUri == securityPolicy.getSecurityPolicyUri)
 
-    val endpoint = Arrays.stream(endpoints).
-      filter(e => e.getSecurityPolicyUri().equals(securityPolicy.getSecurityPolicyUri())).
-      findFirst().orElseThrow(()=> new Exception("no desired endpoints returned"))
-
-    log.info("Using endpoint: {} [{}]", endpoint.getEndpointUrl(), securityPolicy)
+    // get endpoint from filtered endpoints
+    val endpoint = Try(endpoints(0))
+    if (endpoint.isSuccess) 
+      log.info("Using endpoint: {} [{}]", endpoint.get.getEndpointUrl(), securityPolicy)
+    else {
+      log.error("No endpoints with proper security policies were found for securityPolicy = {} at opcEndpoint = ", securityPolicy, opcEndpoint)
+      throw new Exception("Could not connect")
+    }
     //=========================================================================
 
     // return config
     OpcUaClientConfig.builder()
       .setApplicationName(LocalizedText.english("hashmapinc tempus edge opc client"))
       .setApplicationUri("urn:hashmapinc:tempus:edge:opc-client")
-      .setEndpoint(endpoint)
-      .setIdentityProvider(new AnonymousProvider())
+      .setCertificate(OpcSecurity.getClientCertificate(opcConf))
+      .setKeyPair(OpcSecurity.getClientKeyPair(opcConf))
+      .setEndpoint(endpoint.get)
+      .setIdentityProvider(OpcSecurity.getIdentityProvider(opcConf))
       .setRequestTimeout(uint(5000))
       .build
   }

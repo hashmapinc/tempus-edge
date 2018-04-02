@@ -67,8 +67,8 @@ object OpcConnection {
 
     // return config
     OpcUaClientConfig.builder()
-      .setApplicationName(LocalizedText.english("hashmapinc tempus edge opc tag filter"))
-      .setApplicationUri("urn:hashmapinc:tempus:edge:opc-tag-filter")
+      .setApplicationName(LocalizedText.english("Hashmapinc Tempus Edge OPC Client"))
+      .setApplicationUri("urn:hashmapinc:tempus:edge:opc-client")
       .setCertificate(OpcSecurity.clientCertificate)
       .setKeyPair(OpcSecurity.clientKeyPair)
       .setEndpoint(endpoint.get)

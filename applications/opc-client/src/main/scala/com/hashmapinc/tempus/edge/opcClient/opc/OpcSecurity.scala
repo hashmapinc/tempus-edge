@@ -23,13 +23,13 @@ object OpcSecurity {
   // Generate keypair and certificate at run time
   val clientKeyPair = SelfSignedCertificateGenerator.generateRsaKeyPair(2048)
   val clientCertificate = (new SelfSignedCertificateBuilder(clientKeyPair)
-    .setCommonName("Tempus Edge OPC Tag Filter")
+    .setCommonName("Tempus Edge OPC Client")
     .setOrganization("hashmapinc")
     .setOrganizationalUnit("tempus edge")
     .setLocalityName("Atlanta")
     .setStateName("GA")
     .setCountryCode("US")
-    .setApplicationUri("urn:hashmapinc:tempus:edge:opc-tag-filter")
+    .setApplicationUri("urn:hashmapinc:tempus:edge:opc-client")
   ).build
   
   /**

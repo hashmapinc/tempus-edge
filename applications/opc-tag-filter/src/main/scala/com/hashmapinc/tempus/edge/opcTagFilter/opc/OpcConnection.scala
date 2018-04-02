@@ -6,6 +6,7 @@ import org.eclipse.milo.opcua.sdk.client.OpcUaClient
 import org.eclipse.milo.opcua.sdk.client.api.config.{OpcUaClientConfig, OpcUaClientConfigBuilder}
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint
+import org.eclipse.milo.opcua.stack.core.types.enumerated.MessageSecurityMode
 import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription
 import org.eclipse.milo.opcua.stack.client.UaTcpStackClient
 import com.typesafe.scalalogging.Logger
@@ -49,11 +50,13 @@ object OpcConnection {
         log.info("Trying explicit discovery URL: {}", discoveryUrl)
         UaTcpStackClient.getEndpoints(discoveryUrl).get
       }
-    }).get.filter(_.getSecurityPolicyUri == securityPolicy.getSecurityPolicyUri)
+    }).get.filter( endpoint =>
+      endpoint.getSecurityPolicyUri == securityPolicy.getSecurityPolicyUri 
+      && endpoint.getSecurityMode == MessageSecurityMode.SignAndEncrypt
+    )
 
-    // TODO: Filter for securityMode as well
     // get endpoint from filtered endpoints
-    val endpoint = Try(endpoints(1))
+    val endpoint = Try(endpoints(0))
     if (endpoint.isSuccess) 
       log.info("Using endpoint: {} [{}]", endpoint.get.getEndpointUrl(), securityPolicy)
     else {

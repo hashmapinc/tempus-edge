@@ -25,9 +25,6 @@ object Config {
   val OPC_RECONN_DELAY = 10000L   // 10 seconds between reconnection attempts
   val OPC_RECONN_MAX_ATTEMPTS = 5 // maximum of 5 reconnection attempts
 
-  // Path to local certificate
-  val CERTIFICATE_PATH = "./clientCert.der" // TODO: Change this
-
   /**
    * This function updates the trackConfig
    */

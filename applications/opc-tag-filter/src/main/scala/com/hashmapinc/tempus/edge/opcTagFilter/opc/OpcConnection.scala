@@ -6,7 +6,6 @@ import org.eclipse.milo.opcua.sdk.client.OpcUaClient
 import org.eclipse.milo.opcua.sdk.client.api.config.{OpcUaClientConfig, OpcUaClientConfigBuilder}
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint
-import org.eclipse.milo.opcua.stack.core.types.enumerated.MessageSecurityMode
 import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription
 import org.eclipse.milo.opcua.stack.client.UaTcpStackClient
 import com.typesafe.scalalogging.Logger
@@ -37,8 +36,9 @@ object OpcConnection {
     //=========================================================================
     // setup endpoint
     //=========================================================================
-    val securityPolicy = OpcSecurity.getSecurityPolicy(opcConf)
-    val opcEndpoint = opcConf.endpoint   
+    val securityPolicy  = OpcSecurity.getSecurityPolicy(opcConf)
+    val securityMode    = OpcSecurity.getSecurityMode(opcConf)
+    val opcEndpoint     = opcConf.endpoint   
 
     // get all endpoints available at opcEndpoint that match the securityPolicy
     val endpoints = Try({
@@ -52,7 +52,7 @@ object OpcConnection {
       }
     }).get.filter( endpoint =>
       endpoint.getSecurityPolicyUri == securityPolicy.getSecurityPolicyUri 
-      && endpoint.getSecurityMode == MessageSecurityMode.SignAndEncrypt
+      && endpoint.getSecurityMode   == securityMode
     )
 
     // get endpoint from filtered endpoints

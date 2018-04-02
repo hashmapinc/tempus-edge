@@ -8,6 +8,7 @@ import scala.util.Try
 import com.typesafe.scalalogging.Logger
 import org.eclipse.milo.opcua.sdk.client.api.identity.{IdentityProvider, AnonymousProvider}
 import org.eclipse.milo.opcua.stack.core.security.SecurityPolicy
+import org.eclipse.milo.opcua.stack.core.types.enumerated.MessageSecurityMode
 import org.eclipse.milo.opcua.stack.core.util.CryptoRestrictions
 import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateBuilder
 import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateGenerator
@@ -55,7 +56,32 @@ object OpcSecurity {
   }
 
   /**
-   * Creates a opcUaClient configuration
+   * Creates a securityMode from opcConf
+   *
+   * @param opcConf - OpcConfig proto object with opc configuration to use
+   *
+   * @return MessageSecurityMode - MessageSecurityMode created from opcConf
+   */
+  def getSecurityMode (
+    opcConf: OpcConfig
+  ): MessageSecurityMode = {
+    log.info("Getting OPC security mode...")
+
+    // Create security mode based on opcConf
+    opcConf.securityType match {
+      case OpcConfig.SecurityType.NONE            => MessageSecurityMode.None
+      case OpcConfig.SecurityType.BASIC128RSA15   => MessageSecurityMode.SignAndEncrypt
+      case OpcConfig.SecurityType.BASIC256        => MessageSecurityMode.SignAndEncrypt
+      case OpcConfig.SecurityType.BASIC256SHA256  => MessageSecurityMode.SignAndEncrypt
+      case _ => {
+        log.warn("Could not parse OpcConfig Security Mode from Type: {}. MessageSecurityMode.None will be used.", opcConf.securityType)
+        MessageSecurityMode.None
+      }
+    }
+  }
+
+  /**
+   * Creates an identity provider from opcConf
    *
    * @param opcConf - OpcConfig proto object with opc configuration to use
    *
@@ -69,7 +95,7 @@ object OpcSecurity {
   }
 
   /**
-   * Creates a client key pair
+   * Loads a client key pair
    *
    * @param opcConf - OpcConfig proto object with opc configuration to use
    *
@@ -84,7 +110,7 @@ object OpcSecurity {
   }
 
   /**
-   * Creates an X509Certificate
+   * Loads an X509Certificate
    *
    * @param opcConf - OpcConfig proto object with opc configuration to use
    *
@@ -94,7 +120,6 @@ object OpcSecurity {
     opcConf: OpcConfig
   ): X509Certificate = {
     log.info("Getting OPC client certificate...")
-
     // TODO: Load from keystore
     /**
     log.info("Attempting client certificate load from {}", Config.CERTIFICATE_PATH)

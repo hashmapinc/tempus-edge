@@ -19,15 +19,17 @@ import com.hashmapinc.tempus.edge.opcTagFilter.Config
 object OpcSecurity {
   private val log = Logger(getClass())
 
+  // TODO: Replace this with java keystore logic at some point or maybe some kind of privisioning logic
+  // Generate keypair and certificate at run time
   val clientKeyPair = SelfSignedCertificateGenerator.generateRsaKeyPair(2048)
-  val certificate = (new SelfSignedCertificateBuilder(clientKeyPair)
+  val clientCertificate = (new SelfSignedCertificateBuilder(clientKeyPair)
     .setCommonName("Tempus Edge OPC Tag Filter")
     .setOrganization("hashmapinc")
     .setOrganizationalUnit("tempus edge")
     .setLocalityName("Atlanta")
     .setStateName("GA")
     .setCountryCode("US")
-    .setApplicationUri("urn:hashmapinc:tempus:edge:opc-client")
+    .setApplicationUri("urn:hashmapinc:tempus:edge:opc-tag-filter")
   ).build
   
   /**
@@ -92,44 +94,5 @@ object OpcSecurity {
   ): IdentityProvider = {
     log.info("Getting OPC security policy...")
     new AnonymousProvider()
-  }
-
-  /**
-   * Loads a client key pair
-   *
-   * @param opcConf - OpcConfig proto object with opc configuration to use
-   *
-   * @return KeyPair - KeyPair created from opcConf
-   */
-  def getClientKeyPair (
-    opcConf: OpcConfig
-  ): KeyPair = {
-    log.info("Getting OPC client key pair...")
-    // TODO: Load from keystore
-    clientKeyPair
-  }
-
-  /**
-   * Loads an X509Certificate
-   *
-   * @param opcConf - OpcConfig proto object with opc configuration to use
-   *
-   * @return X509Certificate - X509Certificate created from opcConf
-   */
-  def getClientCertificate (
-    opcConf: OpcConfig
-  ): X509Certificate = {
-    log.info("Getting OPC client certificate...")
-    // TODO: Load from keystore
-    /**
-    log.info("Attempting client certificate load from {}", Config.CERTIFICATE_PATH)
-    
-    val certInputStream = new FileInputStream(Config.CERTIFICATE_PATH)
-    CertificateFactory
-      .getInstance("X.509")
-      .generateCertificate(certInputStream)
-      .asInstanceOf[X509Certificate]
-    */
-    certificate
   }
 }

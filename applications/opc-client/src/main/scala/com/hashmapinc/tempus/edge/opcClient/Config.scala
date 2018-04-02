@@ -23,6 +23,7 @@ object Config {
 
   // OPC settings
   val OPC_RECONN_DELAY    = 10000L // 10 seconds between reconnection attempts
+  val OPC_RECONN_MAX_ATTEMPTS = 5 // maximum of 5 reconnection attempts
   val DEFAULT_UPDATE_FREQ = 10000L // 10 seconds between subscription polling
 
   /**
@@ -32,7 +33,9 @@ object Config {
     log.info("Attempting load of trackConfig from " + PATH_TO_TRACK_CONFIG)
 
     // update configs
-    trackConfig = loadConfigs(PATH_TO_TRACK_CONFIG)
+    this synchronized {
+      trackConfig = loadConfigs(PATH_TO_TRACK_CONFIG)
+    }
   }
 
   /**

@@ -1,7 +1,8 @@
 package com.hashmapinc.tempus.edge.opcTagFilter.opc
 
+import java.io.FileInputStream
 import java.security.{KeyPair, KeyPairGenerator}
-import java.security.cert.X509Certificate
+import java.security.cert.{X509Certificate, CertificateFactory}
 import scala.util.Try
 
 import com.typesafe.scalalogging.Logger
@@ -12,11 +13,21 @@ import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateBuilder
 import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateGenerator
 
 import com.hashmapinc.tempus.edge.proto.OpcConfig
+import com.hashmapinc.tempus.edge.opcTagFilter.Config
 
 object OpcSecurity {
   private val log = Logger(getClass())
 
-  CryptoRestrictions.remove
+  val clientKeyPair = SelfSignedCertificateGenerator.generateRsaKeyPair(2048)
+  val certificate = (new SelfSignedCertificateBuilder(clientKeyPair)
+    .setCommonName("Tempus Edge OPC Tag Filter")
+    .setOrganization("hashmapinc")
+    .setOrganizationalUnit("tempus edge")
+    .setLocalityName("Atlanta")
+    .setStateName("GA")
+    .setCountryCode("US")
+    .setApplicationUri("urn:hashmapinc:tempus:edge:opc-client")
+  ).build
   
   /**
    * Creates a opcUaClient configuration
@@ -68,9 +79,8 @@ object OpcSecurity {
     opcConf: OpcConfig
   ): KeyPair = {
     log.info("Getting OPC client key pair...")
-    val kpg = KeyPairGenerator.getInstance("RSA")
-    kpg.initialize(2048)
-    kpg.genKeyPair
+    // TODO: Load from keystore
+    clientKeyPair
   }
 
   /**
@@ -84,16 +94,17 @@ object OpcSecurity {
     opcConf: OpcConfig
   ): X509Certificate = {
     log.info("Getting OPC client certificate...")
-    val keyPair = getClientKeyPair(opcConf)
 
-    new SelfSignedCertificateBuilder(keyPair)
-      .setCommonName("Tempus Edge - OPC Tag Filter Client")
-      .setOrganization("hashmapinc")
-      .setOrganizationalUnit("tempus edge")
-      .setLocalityName("Atlanta")
-      .setStateName("GA")
-      .setCountryCode("US")
-      .setApplicationUri("urn:hashmapinc:tempus:edge:opc-client")
-      .build
+    // TODO: Load from keystore
+    /**
+    log.info("Attempting client certificate load from {}", Config.CERTIFICATE_PATH)
+    
+    val certInputStream = new FileInputStream(Config.CERTIFICATE_PATH)
+    CertificateFactory
+      .getInstance("X.509")
+      .generateCertificate(certInputStream)
+      .asInstanceOf[X509Certificate]
+    */
+    certificate
   }
 }

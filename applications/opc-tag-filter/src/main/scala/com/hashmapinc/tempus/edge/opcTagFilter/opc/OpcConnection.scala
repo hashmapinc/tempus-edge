@@ -1,6 +1,5 @@
 package com.hashmapinc.tempus.edge.opcTagFilter.opc
 
-import java.io.File
 import scala.util.Try
 
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient
@@ -52,8 +51,9 @@ object OpcConnection {
       }
     }).get.filter(_.getSecurityPolicyUri == securityPolicy.getSecurityPolicyUri)
 
+    // TODO: Filter for securityMode as well
     // get endpoint from filtered endpoints
-    val endpoint = Try(endpoints(0))
+    val endpoint = Try(endpoints(1))
     if (endpoint.isSuccess) 
       log.info("Using endpoint: {} [{}]", endpoint.get.getEndpointUrl(), securityPolicy)
     else {

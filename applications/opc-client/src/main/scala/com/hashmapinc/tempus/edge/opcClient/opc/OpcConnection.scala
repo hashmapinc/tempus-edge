@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.opcTagFilter.opc
+package com.hashmapinc.tempus.edge.opcClient.opc
 
 import scala.util.Try
 
@@ -10,7 +10,7 @@ import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription
 import org.eclipse.milo.opcua.stack.client.UaTcpStackClient
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.opcTagFilter.Config
+import com.hashmapinc.tempus.edge.opcClient.Config
 import com.hashmapinc.tempus.edge.proto.OpcConfig
 
 object OpcConnection {

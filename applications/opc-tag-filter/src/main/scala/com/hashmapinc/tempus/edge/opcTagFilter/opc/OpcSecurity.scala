@@ -6,7 +6,7 @@ import java.security.cert.{X509Certificate, CertificateFactory}
 import scala.util.Try
 
 import com.typesafe.scalalogging.Logger
-import org.eclipse.milo.opcua.sdk.client.api.identity.{IdentityProvider, AnonymousProvider}
+import org.eclipse.milo.opcua.sdk.client.api.identity.{IdentityProvider, AnonymousProvider, UsernameProvider}
 import org.eclipse.milo.opcua.stack.core.security.SecurityPolicy
 import org.eclipse.milo.opcua.stack.core.types.enumerated.MessageSecurityMode
 import org.eclipse.milo.opcua.stack.core.util.CryptoRestrictions
@@ -93,6 +93,10 @@ object OpcSecurity {
     opcConf: OpcConfig
   ): IdentityProvider = {
     log.info("Getting OPC security policy...")
-    new AnonymousProvider()
+
+    opcConf.clientIdentity match {
+      case "" => new AnonymousProvider() // no id provided, connect anonymously
+      case _  => new UsernameProvider(opcConf.clientIdentity, opcConf.clientPassword)
+    }
   }
 }

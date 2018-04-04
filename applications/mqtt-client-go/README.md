@@ -18,15 +18,17 @@ No expected ioFog config. All config should come through the track-manager.
 See the [MQTT config protobuff definition](../../protobuf-definitions/src/main/protobuf/MqttConfig.proto)
 
 ## Building
+Make sure your `$GOPATH` contains the `src` directory when you're ready to build.
+
 Build the project and docker image using:
 ```bash
-make build
+make local_compile docker
 ```
 
 ## Usage
 Build and deploy this image to dockerhub using:
 ```bash
-make all
+make deploy
 ```
 
 Publish the image to ioFog. From there, the image can be used in your tracks.

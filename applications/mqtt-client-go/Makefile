@@ -1,9 +1,11 @@
-# Building parameters
+# Make parameters
 APP_NAME=mqtt-client
 VERSION=0.1.0
 EXECUTABLE=$(APP_NAME)$(VERSION)
-TARGET_PACKAGE=golang-book/chapter3
+TARGET_PACKAGE=com/hashmapinc/tempus/edge/mqtt/client
+MAIN_FILE=src/$(TARGET_PACKAGE)/main.go
 
+# default make command
 all: local_compile
 
 # build for local machine running
@@ -22,8 +24,12 @@ docker: alpine_compile
 deploy: docker
 	docker push hashmapinc/tempus-edge-$(APP_NAME):$(VERSION)
 
-# run the docker container
+# run the application locally
 run:
+	go run $(MAIN_FILE)
+
+# run the docker container
+runDocker:
 	docker run -it hashmapinc/tempus-edge-$(APP_NAME):$(VERSION)
 
 # run the docker container and go straight to a shell

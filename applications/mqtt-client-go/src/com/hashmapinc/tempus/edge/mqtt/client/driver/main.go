@@ -1,3 +1,6 @@
+/*
+This package is the entrypoint for the tempus-edge-mqtt-client edge application.
+*/
 package main
 
 import (
@@ -13,11 +16,9 @@ func main() {
 
 	// Check the iofog package
 	fmt.Println("Iofog has connection module: ", iofog.IsConnection)
-	fmt.Println("Iofog has controller module: ", iofog.IsController)
 
 	// Check the mqtt package
 	fmt.Println("MQTT has connection module: ", mqtt.IsConnection)
-	fmt.Println("MQTT has controller module: ", mqtt.IsController)
 	fmt.Println("MQTT has security module: ", mqtt.IsSecurity)
 
 	// Check that the protos are ok

@@ -3,6 +3,7 @@ package main
 import (
 	"com/hashmapinc/tempus/edge/iofog"
 	"com/hashmapinc/tempus/edge/mqtt"
+	"com/hashmapinc/tempus/edge/proto"
 	"fmt"
 )
 
@@ -18,4 +19,8 @@ func main() {
 	fmt.Println("MQTT has connection module: ", mqtt.IsConnection)
 	fmt.Println("MQTT has controller module: ", mqtt.IsController)
 	fmt.Println("MQTT has security module: ", mqtt.IsSecurity)
+
+	// Check that the protos are ok
+	var myTrackConfig = new(proto.TrackConfig)
+	fmt.Println("Protos are importable: ", myTrackConfig.String)
 }

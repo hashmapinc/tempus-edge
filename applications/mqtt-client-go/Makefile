@@ -25,7 +25,7 @@ deploy: docker
 	docker push hashmapinc/tempus-edge-$(APP_NAME):$(VERSION)
 
 # run the application locally
-run:
+run: local_compile
 	go run $(MAIN_FILE)
 
 # run the docker container

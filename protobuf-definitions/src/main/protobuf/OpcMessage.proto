@@ -3,6 +3,7 @@ syntax = "proto3";
 package com.hashmapinc.tempus.edge.proto;
 
 import "OpcConfig.proto";
+option go_package = "com/hashmapinc/tempus/edge/proto";
 
 // Define an OPC message from an OPC client
 message OpcMessage {

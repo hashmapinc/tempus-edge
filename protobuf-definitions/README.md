@@ -8,8 +8,9 @@ Please feel free to submit pull requests if you'd like to extend these definitio
 If you add new message protocols or message types, make sure to update the [README in the edge apps directory](../applications/README.md).
 
 ## Building
-At this point, only Scala protobuf compiling is automated in this directory. Other languages will have to be compiled manually using `protoc`.
+At this point, only Scala and Golang protobuf compiling is automated in this directory. Other languages will have to be compiled manually using `protoc`.
 
+### Scala
 Build using:
 ```bash
 mvn package
@@ -19,5 +20,13 @@ Install to your local maven cache using:
 ```bash
 mvn install
 ```
+
+### Golang
+Build using:
+```bash
+sh ./buildGOLANG.sh
+```
+
+To make the compiled go files available to your edge applications, ensure that you add the go build output directory to your `$GOPATH`.
 
 Please feel free to submit Pull Requests to automate protobuf compiling into other languages!

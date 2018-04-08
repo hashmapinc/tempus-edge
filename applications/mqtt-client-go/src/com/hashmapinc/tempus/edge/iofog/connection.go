@@ -3,5 +3,10 @@ Package iofog contains reusable logic for establishing an iofog connection for t
 */
 package iofog
 
-// IsConnection explains that this exists
-var IsConnection = true
+import (
+	"log"
+	"os"
+)
+
+// configure logger
+var logger = log.New(os.Stderr, "", log.LstdFlags|log.LUTC|log.Lshortfile)

@@ -32,5 +32,6 @@ func main() {
 	}
 
 	// connect msg handler to ws data channel
-	iofog.ConnectListener(client.OnIofogMessage, nil) // nil = use default client
+	var iofogClient = iofog.Client
+	iofog.ConnectListener(client.OnIofogMessage, iofogClient)
 }

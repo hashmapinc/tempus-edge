@@ -24,7 +24,7 @@ test: local_compile
 		echo $(TEST_HEADER); \
 		echo ------- testing $$tp -------; \
 		echo $(TEST_HEADER); \
-		go test -v $$tp; \
+		go test $$tp; \
 		echo $(TEST_FOOTER); \
 	done;
 

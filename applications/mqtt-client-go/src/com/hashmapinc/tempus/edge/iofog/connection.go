@@ -40,11 +40,13 @@ func ConnectListener(lstnr Listener, client DataClient) {
 	dataChannel, _ := client.EstablishMessageWsConnection(runtime.NumCPU(), 0)
 
 	// listen forever
-	for {
-		msg := <-dataChannel // get next message from the data channel
-		logger.Println("Received iofog message!")
-		go lstnr(msg) // launch go routine to handle the new message
-	}
+	go func() {
+		for {
+			msg := <-dataChannel // get next message from the data channel
+			logger.Println("Received iofog message!")
+			lstnr(msg) // launch go routine to handle the new message
+		}
+	}()
 }
 
 // SendWSMessage sens a ws message to iofog with payload as the IoMessage content

@@ -6,7 +6,11 @@ TARGET_PACKAGE=com/hashmapinc/tempus/edge/mqtt/client/driver
 MAIN_FILE=src/$(TARGET_PACKAGE)/main.go
 TESTABLE_PACKAGES :=com/hashmapinc/tempus/edge/mqtt/client \
 									com/hashmapinc/tempus/edge/mqtt \
+									com/hashmapinc/tempus/edge/message \
 									com/hashmapinc/tempus/edge/iofog
+TEST_HEADER="================================================================================="
+TEST_FOOTER="=================================================================================\n\n"
+
 
 # default make command
 all: local_compile
@@ -16,7 +20,13 @@ local_compile:
 	go build -o $(EXECUTABLE) $(TARGET_PACKAGE)
 
 test: local_compile
-	go test -v $(TESTABLE_PACKAGES)
+	for tp in $(TESTABLE_PACKAGES); do \
+		echo $(TEST_HEADER); \
+		echo ------- testing $$tp -------; \
+		echo $(TEST_HEADER); \
+		go test -v $$tp; \
+		echo $(TEST_FOOTER); \
+	done;
 
 # build for an alpine-only environment
 alpine_compile:

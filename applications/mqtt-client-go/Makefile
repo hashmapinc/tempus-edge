@@ -16,7 +16,7 @@ local_compile:
 	go build -o $(EXECUTABLE) $(TARGET_PACKAGE)
 
 test: local_compile
-	for tp in $(TESTABLE_PACKAGES); do go test $$tp; done;
+	go test -v $(TESTABLE_PACKAGES)
 
 # build for an alpine-only environment
 alpine_compile:

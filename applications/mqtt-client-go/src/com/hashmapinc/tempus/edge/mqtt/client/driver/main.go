@@ -16,4 +16,6 @@ func main() {
 	// update track
 	logger.Println("Get to testing!!")
 	client.LogTest()
+	err := client.UpdateTrackConfig()
+	logger.Println(err)
 }

@@ -7,6 +7,7 @@ package client
 
 import (
 	pb "com/hashmapinc/tempus/edge/proto"
+	"errors"
 	"log"
 	"os"
 )
@@ -38,5 +39,6 @@ func UpdateTrackConfig() error {
 func loadTrackConfig(path string) (tc pb.TrackConfig, err error) {
 	// TODO: implement this for real
 	tc.TrackMetadata = &pb.TrackMetadata{TrackId: 1, TrackName: "new_track"}
+	err = errors.New("Error in loadTrackConfig")
 	return
 }

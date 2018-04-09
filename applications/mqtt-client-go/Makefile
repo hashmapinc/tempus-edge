@@ -37,7 +37,7 @@ docker: alpine_compile
 	docker build -t hashmapinc/tempus-edge-$(APP_NAME):$(VERSION) --build-arg EXECUTABLE=$(EXECUTABLE) .
 
 # deploy the docker image
-deploy: docker
+deploy: test docker
 	docker push hashmapinc/tempus-edge-$(APP_NAME):$(VERSION)
 
 # run the application locally

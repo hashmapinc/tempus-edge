@@ -20,7 +20,7 @@ func main() {
 
 	// connect to local iofog agent
 	retriesLeft := 10
-	retryDelay := 10 * time.Second
+	retryDelay := 10
 	for err := iofog.StartConnection(); err != nil; {
 		retriesLeft--
 		if retriesLeft < 1 {
@@ -28,7 +28,7 @@ func main() {
 		}
 		logger.Println("Could not connect to ioFog Agent. Received error: ", err.Error())
 		logger.Printf("Will retry ioFog connection in %d seconds. %d retries remaining...\n", retryDelay, retriesLeft)
-		time.Sleep(retryDelay * time.Second)
+		time.Sleep(time.Duration(retryDelay) * time.Second)
 		err = iofog.StartConnection()
 	}
 
@@ -43,4 +43,7 @@ func main() {
 
 	//perform initial track config update
 	client.UpdateTrackConfig()
+
+	for {
+	}
 }

@@ -1,10 +1,10 @@
 package mqtt
 
 import (
-	"com/hashmapinc/tempus/edge/proto"
-	"fmt"
+	pb "com/hashmapinc/tempus/edge/proto"
 	"testing"
-	"time"
+
+	"github.com/golang/protobuf/proto"
 )
 
 var mqttConfigTable = []struct {
@@ -18,34 +18,18 @@ var mqttConfigTable = []struct {
 
 func TestUpdateClient(t *testing.T) {
 	for _, conf := range mqttConfigTable {
-		mqttUser := &proto.MqttConfig_User{Username: conf.username, Password: conf.password}
-		mqttBroker := &proto.MqttConfig_Broker{Host: conf.host, Port: conf.port}
-		mqttConfig := &proto.MqttConfig{User: mqttUser, Broker: mqttBroker}
-		tc := &proto.TrackConfig{MqttConfig: mqttConfig}
+		mqttUser := &pb.MqttConfig_User{Username: conf.username, Password: conf.password}
+		mqttBroker := &pb.MqttConfig_Broker{Host: conf.host, Port: conf.port}
+		mqttConfig := &pb.MqttConfig{User: mqttUser, Broker: mqttBroker}
+		tc := &pb.TrackConfig{MqttConfig: mqttConfig}
+		t.Logf("updating client with tc: %v\n", tc)
 		UpdateClient(tc)
 
-		// wait a second to allow goroutine processing
-		time.Sleep(1 * time.Second)
+		found := <-newConfigChannel
+		expected := mqttConfig
 
-		opts := client.OptionsReader()
-
-		username := opts.Username()
-		password := opts.Password()
-		server := opts.Servers()[0]
-		host := server.Host
-		port := server.Port()
-
-		got := []string{username, password, host, port}
-		expected := []string{conf.username, conf.password, conf.host, fmt.Sprintf("%d", conf.port)}
-
-		for i := 0; i < len(expected); i++ {
-			if got[i] != expected[i] {
-				t.Errorf("expected %s ; got %s\n", got[i], expected[i])
-			}
-		}
-
-		if opts.Username() != mqttUser.GetUsername() {
-			t.Errorf("Expected %s ; got %s", opts.Username(), "F")
+		if !proto.Equal(found, expected) {
+			t.Errorf("found:\n%v\nexpected:\n%v\n", found, expected)
 		}
 	}
 }

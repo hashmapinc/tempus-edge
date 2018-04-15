@@ -19,17 +19,17 @@ import (
 // create logger
 var logger = log.New(os.Stderr, "", log.LstdFlags|log.LUTC|log.Lshortfile)
 
-// client holds pointer to current active paho client
+// client holds pointer to current active paho Client
 var client = paho.NewClient(paho.NewClientOptions())
 
-// MsgHandler points to function that handles new mqtt messages
+// MsgHandler points to the function that will handle
 var MsgHandler paho.MessageHandler = func(msgClient paho.Client, msg paho.Message) {
-	logger.Println("Received mqtt message:", msg.MessageID, "on topic:", msg.Topic())
+	logger.Println("Received mqtt message:", msg.MessageID(), "on topic:", msg.Topic())
 }
 
 // concurrency vars
-var newConfigChannel = make(chan *proto.MqttConfig, 0)
-var newClientChannel = make(chan paho.Client, 0)
+var newConfigChannel = make(chan *proto.MqttConfig, 10)
+var newClientChannel = make(chan paho.Client, 10)
 var msgOutboxChannel = make(chan *paho.Message, 100)
 
 // Listen launches goroutines necessary for handling config changes

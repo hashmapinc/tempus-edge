@@ -22,7 +22,6 @@ type DataClient interface {
 	SendMessageViaSocket(msg *sdk.IoMessage) error
 }
 
-// configure logger
 var logger = log.New(os.Stderr, "", log.LstdFlags|log.LUTC|log.Lshortfile)
 
 // Client holds the connection to the local ioFog agent

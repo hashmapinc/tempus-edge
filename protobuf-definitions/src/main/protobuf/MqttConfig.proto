@@ -33,4 +33,8 @@ message MqttConfig {
     string password = 2;
   }
   User user = 5; // user details when authenticating 
+
+  // define reconnection params
+  uint32 max_retries = 6; // max retries when connecting to broker
+  uint64 retry_delay = 7; // num milliseconds between retries
 }

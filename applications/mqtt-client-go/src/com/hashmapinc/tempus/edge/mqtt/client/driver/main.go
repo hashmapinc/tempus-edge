@@ -5,6 +5,7 @@ package main
 
 import (
 	"com/hashmapinc/tempus/edge/iofog"
+	"com/hashmapinc/tempus/edge/mqtt"
 	"com/hashmapinc/tempus/edge/mqtt/client"
 	"log"
 	"os"
@@ -32,6 +33,14 @@ func main() {
 	}
 
 	// connect msg handler to ws data channel
-	var iofogClient = iofog.Client
-	iofog.ConnectListener(client.OnIofogMessage, iofogClient)
+	iofog.ConnectListener(client.OnIofogMessage, iofog.Client)
+
+	// connect mqtt msg handler
+	mqtt.MsgHandler = client.OnMqttMessage
+
+	// start mqtt client
+	mqtt.Listen()
+
+	//perform initial track config update
+	client.UpdateTrackConfig()
 }

@@ -20,22 +20,23 @@ import (
 var logger = log.New(os.Stderr, "", log.LstdFlags|log.LUTC|log.Lshortfile)
 
 // client holds pointer to current active paho client
-var client *paho.Client
+var client = paho.NewClient(paho.NewClientOptions())
+
+// MsgHandler points to function that handles new mqtt messages
+var MsgHandler paho.MessageHandler = func(msgClient paho.Client, msg paho.Message) {
+	logger.Println("Received mqtt message:", msg.MessageID, "on topic:", msg.Topic())
+}
 
 // concurrency vars
 var newConfigChannel = make(chan *proto.MqttConfig, 0)
-var newClientChannel = make(chan *paho.Client, 0)
+var newClientChannel = make(chan paho.Client, 0)
+var msgOutboxChannel = make(chan *paho.Message, 100)
 
 // Listen launches goroutines necessary for handling config changes
 func Listen() {
 	// launch new client listener loop
 	go func() {
-		newClient := <-newClientChannel
-		if newClient == nil {
-			logger.Println("Received nil pointer in newClientChannel. Ignoring and moving on...")
-		} else {
-			client = newClient
-		}
+		client = <-newClientChannel
 	}()
 
 	// launch new config listener loop
@@ -45,7 +46,7 @@ func Listen() {
 			// launch handler for new config
 			go func() {
 				newClient, err := createClient(mqttConfig)
-				if err == nil {
+				if err != nil {
 					logger.Println("error creating client:", err.Error())
 				} else {
 					logger.Println("successfully created new client!")
@@ -65,7 +66,6 @@ func parseOptsFromConf(mqttConfig *proto.MqttConfig) (opts *paho.ClientOptions, 
 	logger.Printf("Parsing mqttConf:\n%v\n into client options struct\n", mqttConfig)
 
 	opts = paho.NewClientOptions().
-		SetAutoReconnect(true).
 		SetUsername(mqttConfig.GetUser().GetUsername()).
 		SetPassword(mqttConfig.GetUser().GetPassword()).
 		AddBroker(fmt.Sprintf("tcp://%s:%d", mqttConfig.GetBroker().GetHost(), mqttConfig.GetBroker().GetPort())).
@@ -76,23 +76,19 @@ func parseOptsFromConf(mqttConfig *proto.MqttConfig) (opts *paho.ClientOptions, 
 }
 
 // createClient creates a paho client from the given mqttConfig
-func createClient(mqttConfig *proto.MqttConfig) (newClient *paho.Client, err error) {
+func createClient(mqttConfig *proto.MqttConfig) (newClient paho.Client, err error) {
 	// get paho client options from mqtt config
 	opts, err := parseOptsFromConf(mqttConfig)
 	if err != nil {
 		return
 	}
-	retriesLeft := mqttConfig.MaxRetries
-	retryDelay := mqttConfig.GetRetryDelay()
 
-	logger.Println("Will begin client creation attempt.",
-		"\nRetries:", retriesLeft,
-		"\nRetry Delay:", retryDelay,
-		"\nClient Options:", opts)
-
-	for ; retriesLeft > 0; retriesLeft-- {
-
+	// attach msg handler if it exists to opts
+	if MsgHandler != nil {
+		opts = opts.SetDefaultPublishHandler(MsgHandler)
 	}
+
+	newClient = paho.NewClient(opts)
 
 	return
 }

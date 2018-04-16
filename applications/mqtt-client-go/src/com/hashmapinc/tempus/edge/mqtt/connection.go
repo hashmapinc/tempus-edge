@@ -30,7 +30,7 @@ var MsgHandler paho.MessageHandler = func(msgClient paho.Client, msg paho.Messag
 // concurrency vars
 var newConfigChannel = make(chan *proto.MqttConfig, 10)
 var newClientChannel = make(chan paho.Client, 10)
-var msgOutboxChannel = make(chan *paho.Message, 100)
+var msgOutboxChannel = make(chan *proto.MqttMessage, 100)
 
 // Listen launches goroutines necessary for handling config changes
 func Listen() {
@@ -55,6 +55,27 @@ func Listen() {
 			}()
 		}
 	}()
+
+	// launch outbox listener loop
+	go func() {
+		for {
+			outgoingMsg := <-msgOutboxChannel // block until new msg is available
+			//launch msg sender
+			go func() {
+				err := Publish(outgoingMsg)
+				if err != nil {
+					logger.Println("error publishing message:", err.Error())
+				}
+			}()
+		}
+	}()
+}
+
+// Publish sends msg to the current broker
+func Publish(msg *proto.MqttMessage) error {
+	qos := byte(proto.MqttMessage_QoS_value[msg.GetQos().String()])
+	token := client.Publish(msg.GetTopic(), qos, false, msg.GetPayload())
+	return token.Error()
 }
 
 // createClient creates a paho client from the given mqttConfig

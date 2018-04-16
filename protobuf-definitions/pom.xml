@@ -101,6 +101,7 @@
                 <argument>${project.basedir}/src/main/protobuf/TrackConfig.proto</argument>
                 <argument>${project.basedir}/src/main/protobuf/JsonDataMessage.proto</argument>
                 <argument>${project.basedir}/src/main/protobuf/OpcMessage.proto</argument>                
+                <argument>${project.basedir}/src/main/protobuf/MqttMessage.proto</argument>                
               </arguments>
             </configuration>
           </execution>

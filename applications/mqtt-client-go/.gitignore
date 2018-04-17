@@ -1,0 +1,6 @@
+# ignore the mqtt client executable
+mqtt-client?.?.?
+
+# ignore sample configs
+config.pb
+sampleConfig.json

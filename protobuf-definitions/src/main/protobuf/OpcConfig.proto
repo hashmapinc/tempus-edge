@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package com.hashmapinc.tempus.edge.proto;
+option go_package = "com/hashmapinc/tempus/edge/proto";
 
 // Define the configuration needed to work with OPC services.
 message OpcConfig {
@@ -52,4 +53,8 @@ message OpcConfig {
   // define identity
   string client_identity = 8;
   string client_password = 9;
+
+  // define reconnection params
+  uint32 max_retries = 10; // max retries when connecting to broker
+  uint64 retry_delay = 11; // num milliseconds between retries
 }

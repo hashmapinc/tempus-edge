@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package com.hashmapinc.tempus.edge.proto;
+option go_package = "com/hashmapinc/tempus/edge/proto";
+
+// Define the structure of an mqtt message.
+message MqttMessage {
+  string topic = 1;
+  bytes payload = 2;
+
+  // define quality of service levels
+  enum QoS {
+    ZERO = 0;
+    ONE = 1;
+    TWO = 2;
+  }
+  QoS qos = 3;
+}

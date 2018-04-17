@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package com.hashmapinc.tempus.edge.proto;
+option go_package = "com/hashmapinc/tempus/edge/proto";
 
 //=============================================================================
 // Define byte values for describing tempus edge message types

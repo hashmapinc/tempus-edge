@@ -45,7 +45,7 @@ run: local_compile
 	go run $(MAIN_FILE)
 
 # run the docker container
-runDocker:
+runDocker: docker
 	docker run -it hashmapinc/tempus-edge-$(APP_NAME):$(VERSION)
 
 # run the docker container and go straight to a shell

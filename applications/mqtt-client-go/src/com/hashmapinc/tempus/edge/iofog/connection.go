@@ -30,6 +30,9 @@ var Client = &sdk.IoFogClient{}
 // StartConnection connects to the ioFog agent
 func StartConnection() (err error) {
 	Client, err = sdk.NewDefaultIoFogClient()
+	if err != nil {
+		logger.Println("received erorr when starting iofog connection:", err.Error())
+	}
 	return
 }
 
@@ -43,7 +46,7 @@ func ConnectListener(lstnr Listener, client DataClient) {
 		for {
 			msg := <-dataChannel // get next message from the data channel
 			logger.Println("Received iofog message!")
-			lstnr(msg) // launch go routine to handle the new message
+			lstnr(msg)
 		}
 	}()
 }

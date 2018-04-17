@@ -63,7 +63,7 @@ func Listen() {
 			outgoingMsg := <-msgOutboxChannel // block until new msg is available
 			//launch msg sender
 			go func() {
-				err := Publish(outgoingMsg)
+				err := publish(outgoingMsg)
 				if err != nil {
 					logger.Println("error publishing message:", err.Error())
 				}
@@ -72,14 +72,20 @@ func Listen() {
 	}()
 }
 
-// Publish sends msg to the current broker
-func Publish(msg *proto.MqttMessage) error {
+// publish sends msg to the current broker
+func publish(msg *proto.MqttMessage) error {
 	qos := byte(proto.MqttMessage_QoS_value[msg.GetQos().String()])
 	token := client.Publish(msg.GetTopic(), qos, false, msg.GetPayload())
 	return token.Error()
 }
 
-// PublishJSONDataMessage converts msg into an MqttMessage and Publishes it
+// PublishMQTTMessage pushes msg to the outbox channel
+func PublishMQTTMessage(msg *proto.MqttMessage) (err error) {
+	msgOutboxChannel <- msg
+	return
+}
+
+// PublishJSONDataMessage converts msg into an MqttMessage and pushes it to the outbox channel
 func PublishJSONDataMessage(msg *proto.JsonDataMessage) (err error) {
 	jsonString := msg.GetJson()
 	mqttMsg := &proto.MqttMessage{}
@@ -91,8 +97,8 @@ func PublishJSONDataMessage(msg *proto.JsonDataMessage) (err error) {
 	return
 }
 
-// PublishOpcMessage converts msg into an MqttMessage and Publishes it
-func PublishOpcMessage(msg *proto.OpcMessage) error {
+// PublishOPCMessage converts msg into an MqttMessage and Publishes it
+func PublishOPCMessage(msg *proto.OpcMessage) error {
 	// get payload
 	var payload []byte
 	switch msg.Value.(type) {

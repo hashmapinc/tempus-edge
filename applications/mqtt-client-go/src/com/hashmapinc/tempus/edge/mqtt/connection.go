@@ -14,6 +14,7 @@ import (
 	"os"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
+	"github.com/golang/protobuf/jsonpb"
 )
 
 // create logger
@@ -76,6 +77,54 @@ func Publish(msg *proto.MqttMessage) error {
 	qos := byte(proto.MqttMessage_QoS_value[msg.GetQos().String()])
 	token := client.Publish(msg.GetTopic(), qos, false, msg.GetPayload())
 	return token.Error()
+}
+
+// PublishJSONDataMessage converts msg into an MqttMessage and Publishes it
+func PublishJSONDataMessage(msg *proto.JsonDataMessage) (err error) {
+	jsonString := msg.GetJson()
+	mqttMsg := &proto.MqttMessage{}
+	err = jsonpb.UnmarshalString(jsonString, mqttMsg)
+	if err == nil {
+		// push mqttMsg to outbox
+		msgOutboxChannel <- mqttMsg
+	}
+	return
+}
+
+// PublishOpcMessage converts msg into an MqttMessage and Publishes it
+func PublishOpcMessage(msg *proto.OpcMessage) error {
+	// get payload
+	var payload []byte
+	switch msg.Value.(type) {
+	case *proto.OpcMessage_ValueBoolean:
+		payload = []byte(fmt.Sprintf("%t", msg.GetValueBoolean()))
+	case *proto.OpcMessage_ValueDouble:
+		payload = []byte(fmt.Sprintf("%f", msg.GetValueDouble()))
+	case *proto.OpcMessage_ValueFloat:
+		payload = []byte(fmt.Sprintf("%f", msg.GetValueFloat()))
+	case *proto.OpcMessage_ValueInt32:
+		payload = []byte(fmt.Sprintf("%d", msg.GetValueInt32()))
+	case *proto.OpcMessage_ValueInt64:
+		payload = []byte(fmt.Sprintf("%d", msg.GetValueInt64()))
+	case *proto.OpcMessage_ValueString:
+		payload = []byte(fmt.Sprintf("%s", msg.GetValueString()))
+	case nil:
+		// The field is not set. do nothing
+	default:
+		logger.Println("Could not process opc message value:", msg)
+		return errors.New("could not process opc message value")
+	}
+
+	// create mqttMsg
+	mqttMsg := &proto.MqttMessage{
+		Qos:     proto.MqttMessage_TWO, // 2 is default for all incoming opc messages
+		Topic:   msg.GetDeviceName(),
+		Payload: payload,
+	}
+
+	// push mqttMsg to outbox
+	msgOutboxChannel <- mqttMsg
+	return nil
 }
 
 // createClient creates a paho client from the given mqttConfig

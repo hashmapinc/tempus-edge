@@ -1,7 +1,7 @@
 package iofog
 
 import (
-	sdk "github.com/iotracks/container-sdk-go"
+	sdk "github.com/iofog/container-sdk-go"
 )
 
 // Listener is a function type for handling iofog data websocket events

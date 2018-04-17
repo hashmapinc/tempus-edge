@@ -7,7 +7,7 @@ import (
 	"errors"
 
 	"github.com/golang/protobuf/proto"
-	sdk "github.com/iotracks/container-sdk-go"
+	sdk "github.com/iofog/container-sdk-go"
 )
 
 // OnIofogMessage processes incoming iofog messages

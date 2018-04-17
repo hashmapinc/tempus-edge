@@ -74,9 +74,16 @@ func Listen() {
 
 // publish sends msg to the current broker
 func publish(msg *proto.MqttMessage) error {
+	logger.Printf("publishing mqtt message to broker: %v\n", msg)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		return token.Error()
+	}
+
 	qos := byte(proto.MqttMessage_QoS_value[msg.GetQos().String()])
-	token := client.Publish(msg.GetTopic(), qos, false, msg.GetPayload())
-	return token.Error()
+	if token := client.Publish(msg.GetTopic(), qos, false, msg.GetPayload()); token.Wait() && token.Error() != nil {
+		return token.Error()
+	}
+	return nil
 }
 
 // PublishMQTTMessage pushes msg to the outbox channel
@@ -142,8 +149,8 @@ func parseOptsFromConf(mqttConfig *proto.MqttConfig) (opts *paho.ClientOptions, 
 	logger.Printf("Parsing mqttConf:\n%v\n into client options struct\n", mqttConfig)
 
 	opts = paho.NewClientOptions().
-		SetUsername(mqttConfig.GetUser().GetUsername()).
-		SetPassword(mqttConfig.GetUser().GetPassword()).
+		SetUsername(mqttConfig.GetUser().GetPassword()).
+		SetPassword(mqttConfig.GetUser().GetUsername()).
 		AddBroker(fmt.Sprintf("tcp://%s:%d", mqttConfig.GetBroker().GetHost(), mqttConfig.GetBroker().GetPort())).
 		SetClientID("tempus::edge::mqtt")
 

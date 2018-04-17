@@ -13,6 +13,7 @@ import (
 // OnIofogMessage processes incoming iofog messages
 func OnIofogMessage(msg *sdk.IoMessage) error {
 	if msg == nil || msg.ContentData == nil || len(msg.ContentData) < 2 {
+		logger.Println("could not handle new iofog message:", msg)
 		return errors.New("received non-tempus-edge message")
 	}
 	payload := msg.ContentData
@@ -20,6 +21,7 @@ func OnIofogMessage(msg *sdk.IoMessage) error {
 	var typB = payload[1]
 	ptcl, typ, err := message.DecodeHeader(ptclB, typB)
 	if err != nil {
+		logger.Println("Could not handle new iofog message:", msg)
 		return err
 	}
 	logger.Printf("Processing msg with protocol '%s' and type '%s'\n", ptcl, typ)

@@ -21,6 +21,7 @@ func main() {
 	// connect to local iofog agent
 	retriesLeft := 10
 	retryDelay := 10
+	logger.Println("starting iofog connection")
 	for err := iofog.StartConnection(); err != nil; {
 		retriesLeft--
 		if retriesLeft < 1 {
@@ -31,19 +32,23 @@ func main() {
 		time.Sleep(time.Duration(retryDelay) * time.Second)
 		err = iofog.StartConnection()
 	}
-
 	// connect msg handler to ws data channel
+	logger.Println("Successfully connected to iofog!")
 	iofog.ConnectListener(client.OnIofogMessage, iofog.Client)
 
 	// connect mqtt msg handler
 	mqtt.MsgHandler = client.OnMqttMessage
 
 	// start mqtt client
+	logger.Println("starting mqtt connection")
 	mqtt.Listen()
 
-	//perform initial track config update
+	// perform initial updates
 	client.UpdateTrackConfig()
+	mqtt.UpdateClient(client.LocalTrackConfig)
 
+	// loop forever
+	logger.Println("listening for tasks...")
 	for {
 	}
 }

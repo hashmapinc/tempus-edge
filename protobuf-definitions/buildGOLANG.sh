@@ -16,4 +16,4 @@ protoc \
   $SRC_DIR/*.proto
 
 # tell the dear user to add $DEST_DIR to their $GOPATH
-echo "Please do not forget to add $DEST_DIR to your \$GOPATH to make proto go files importable!"
+echo "If you haven't already, please do not forget to add $DEST_DIR to your \$GOPATH to make proto go files importable."

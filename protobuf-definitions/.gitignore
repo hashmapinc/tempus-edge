@@ -1,1 +1,3 @@
 go-protobuf-output
+python-protobuf-output/tempus/edge/proto
+python-protobuf-output/*.egg-info

@@ -19,7 +19,6 @@ import config
 clientLock = threading.Lock()
 fogClient = IoFogClient()
 mqttClient = None
-config = None
 
 def update():
     config.updateTrackConfig()
@@ -76,7 +75,7 @@ def parseJson(jsonString):
     # try parsing into mqtt
     try:
         parsed_mqtt = te_mqttMsg.MqttMessage()
-        json_format.Parse(jsonString, parsed_mqtt, ignore_unknown_fields=True)
+        json_format.Parse(jsonString, parsed_mqtt)
         return parseMqttMessage(parsed_mqtt)
     except:
         pass
@@ -84,11 +83,17 @@ def parseJson(jsonString):
     # try parsing into opc
     try:
         parsed_opc = te_opcMsg.OpcMessage()
-        json_format.Parse(jsonString, parsed_opc, ignore_unknown_fields=True)
+        json_format.Parse(jsonString, parsed_opc)
         return parseOpcMessage(parsed_opc)
     except:
         pass
-    return {}
+
+    # just send the json as the payload then
+    return {
+        'qos': 2,
+        'topic': "v1/devices/me/telemetry",
+        "payload": jsonString
+    }
 
 # parses a json string into an outgoing mqtt message
 def parseMqttMessage(mqttMessage):
@@ -109,19 +114,22 @@ def parseJsonDataMessage(jsonMessage):
 
 class MessageListener(IoFogMessageWsListener):
     def on_message(self, msg):
+        print("received iofog messge...")
         # create empty mqtt message
         mqttMsg = {}
 
         try:
             # process iofog message
             ptcl = msg.contentdata[0]
+            print ("message ptcl = " + str(ptcl))
 
             # handle true json
-            if ptcl == '{':
+            if ptcl == 123: # 123 = '{'
                 mqttMsg = parseJson(msg.contentdata.decode('utf-8'))
 
             # handle config messages
             elif ptcl == protocols.CONFIG:
+                print("Got update config signal! Updating now...")
                 update() # update configs
             
             # handle data messages
@@ -141,14 +149,15 @@ class MessageListener(IoFogMessageWsListener):
                     mqttMsg = parseJsonDataMessage(jsonMessage)
                 # handle all other date message types
                 else:
-                    print("could not handle iofog message: " + str(msg))
+                    print("could not handle DATA message: " + str(msg.contentdata))
 
             # handle all other ptcls
             else:
-                print("could not handle iofog message: " + str(msg))
+                print("Unknown protocol - could not handle iofog message: " + str(msg.contentdata))
 
-        except:
-            print("could not handle iofog message: " + str(msg))
+        except Exception as e:
+            print("Error - could not handle iofog message: " + str(msg.contentdata))
+            print("Error: " + str(e))
         
         # send msg if it was created
         if mqttMsg:
@@ -233,6 +242,7 @@ class MqttClient:
         fogClient.post_message_via_socket(io_mesage)
 
     def publish(self, message):
+        print("publishing message to mqtt: " + str(message))
         self.mqttClient.publish(message['topic'], message['payload'], message['qos'])
 
     def update_subscriptions(self, subscriptions):

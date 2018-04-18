@@ -23,6 +23,8 @@ def getBroker():
       broker['port'] = tc.mqtt_config.broker.port
   except Exception as err:
     print("could get broker: " + str(err))
+  
+  print("using broker: " + str(broker))
   return broker
 
 
@@ -34,6 +36,7 @@ def getUser():
       user['password'] = tc.mqtt_config.user.password
   except Exception as err:
     print("could not get user: " + str(err))
+  print("using user: " + str(user))
   return user
 
 

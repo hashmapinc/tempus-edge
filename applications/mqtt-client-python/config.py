@@ -2,7 +2,7 @@ import threading
 from tempus.edge.proto import TrackConfig_pb2 as TC
 
 config_lock = threading.Lock()
-CONFIG_PATH="./config.pb"
+CONFIG_PATH="/mnt/config/config.pb"
 tc = TC.TrackConfig()
 
 def updateTrackConfig():

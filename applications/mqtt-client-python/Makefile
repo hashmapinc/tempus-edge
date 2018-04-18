@@ -1,6 +1,8 @@
-all:build push
+all:build
 
 build:
 	docker build --no-cache -t hashmapinc/iofog:mqtt-client .
-push:
+run: build
+	docker run -it hashmapinc/iofog:mqtt-client /bin/ash
+deploy: build
 	docker push hashmapinc/iofog:mqtt-client

@@ -15,11 +15,11 @@ from tempus.edge.proto import MqttMessage_pb2 as te_mqttMsg
 
 import config
 
+# set globals
 clientLock = threading.Lock()
 fogClient = IoFogClient()
 mqttClient = None
 config = None
-update()
 
 def update():
     config.updateTrackConfig()
@@ -248,4 +248,8 @@ class MqttClient:
         for s in self.subscriptions:
             self.mqttClient.subscribe(s['topic'], s['qos'])
 
-fogClient.establish_message_ws_connection(MessageListener())
+
+# Run app
+if __name__ == '__main__':
+    fogClient.establish_message_ws_connection(MessageListener())
+    update()

@@ -2,7 +2,8 @@ import threading
 
 from iofog_container_sdk.client import IoFogClient, IoFogException
 from iofog_container_sdk.iomessage import IoMessage
-from iofog_container_sdk.listener import *
+from iofog_container_sdk.listener import IoFogMessageWsListener
+from google.protobuf import json_format
 from paho.mqtt import client
 from paho.mqtt.client import MQTT_ERR_SUCCESS
 
@@ -12,17 +13,17 @@ from tempus.edge.proto import JsonDataMessage_pb2 as te_jsonMsg
 from tempus.edge.proto import OpcMessage_pb2 as te_opcMsg
 from tempus.edge.proto import MqttMessage_pb2 as te_mqttMsg
 
-
 import config
 
-
 clientLock = threading.Lock()
-
+fogClient = IoFogClient()
+mqttClient = None
+config = None
+update()
 
 def update():
     config.updateTrackConfig()
     update_mqtt_client()
-
 
 def update_mqtt_client():
     global mqttClient
@@ -49,6 +50,62 @@ def update_mqtt_client():
         mqttClient.connect()
     mqttClient.update_subscriptions(config.getSubscriptions())
 
+# converts an opcMsg into an mqtt sendable message.
+def parseOpcMessage(opcMsg):
+    try:
+        mqttMsg = {}
+        mqttMsg['topic'] = opcMsg.device_name
+        mqttMsg['qos'] = 2
+        oneof = opcMsg.WhichOneof('value')
+        if oneof:
+            vals = {
+                'value_boolean': opcMsg.value_boolean,
+                'value_double': opcMsg.value_double,
+                'value_float': opcMsg.value_float,
+                'value_int32': opcMsg.value_int32,
+                'value_int64': opcMsg.value_int64,
+                'value_string': opcMsg.value_string,
+            }
+            mqttMsg['payload'] = vals[oneof]
+        return opcMsg
+    except:
+        return {}
+
+# parses a json string into an outgoing mqtt message
+def parseJson(jsonString):
+    # try parsing into mqtt
+    try:
+        parsed_mqtt = te_mqttMsg.MqttMessage()
+        json_format.Parse(jsonString, parsed_mqtt, ignore_unknown_fields=True)
+        return parseMqttMessage(parsed_mqtt)
+    except:
+        pass
+    
+    # try parsing into opc
+    try:
+        parsed_opc = te_opcMsg.OpcMessage()
+        json_format.Parse(jsonString, parsed_opc, ignore_unknown_fields=True)
+        return parseOpcMessage(parsed_opc)
+    except:
+        pass
+    return {}
+
+# parses a json string into an outgoing mqtt message
+def parseMqttMessage(mqttMessage):
+    # try parsing into mqtt
+    try:
+        return {
+            'qos': mqttMessage.qos,
+            'topic': mqttMessage.topic,
+            'payload': mqttMessage.payload
+        }
+    except:
+        return {}
+
+
+# parses an iofog json data message into an mqtt message
+def parseJsonDataMessage(jsonMessage):
+    return parseJson(jsonMessage.json)
 
 class MessageListener(IoFogMessageWsListener):
     def on_message(self, msg):
@@ -59,38 +116,29 @@ class MessageListener(IoFogMessageWsListener):
             # process iofog message
             ptcl = msg.contentdata[0]
 
+            # handle true json
+            if ptcl == '{':
+                mqttMsg = parseJson(msg.contentdata.decode('utf-8'))
+
             # handle config messages
-            if ptcl == protocols.CONFIG:
+            elif ptcl == protocols.CONFIG:
                 update() # update configs
             
             # handle data messages
             elif ptcl == protocols.DATA:
                 typ = msg.contentdata[1] # check what type of data message this is
-
                 # handle opc message
                 if typ == messageTypes.OPC:
                     opcMsg = te_opcMsg.OpcMessage().ParseFromString(msg.contentdata[2:])
-                    mqttMsg['topic'] = opcMsg.device_name
-                    mqttMsg['qos'] = 2
-                    oneof = opcMsg.WhichOneof('value')
-                    if oneof:
-                        vals = {
-                            'value_boolean': opcMsg.value_boolean,
-                            'value_double': opcMsg.value_double,
-                            'value_float': opcMsg.value_float,
-                            'value_int32': opcMsg.value_int32,
-                            'value_int64': opcMsg.value_int64,
-                            'value_string': opcMsg.value_string,
-                        }
-                        mqttMsg['payload'] = vals[oneof]
-
-
+                    mqttMsg = parseOpcMessage(opcMsg)
                 # handle mqtt message
                 elif typ == messageTypes.MQTT:
-                
+                    mqttMessage = te_mqttMsg.MqttMessage().ParseFromString(msg.contentdata[2:])
+                    mqttMsg = parseMqttMessage(mqttMessage)
                 # handle json message
                 elif typ == messageTypes.JSON:
-                
+                    jsonMessage = te_jsonMsg.JsonDataMessage().ParseFromString(msg.contentdata[2:])
+                    mqttMsg = parseJsonDataMessage(jsonMessage)
                 # handle all other date message types
                 else:
                     print("could not handle iofog message: " + str(msg))
@@ -99,18 +147,12 @@ class MessageListener(IoFogMessageWsListener):
             else:
                 print("could not handle iofog message: " + str(msg))
 
-        except Exception as e:
+        except:
             print("could not handle iofog message: " + str(msg))
         
         # send msg if it was created
         if mqttMsg:
             mqttClient.publish(mqttMsg)
-
-def callPublish(message, io_msg):
-    message[PAYLOAD] = io_msg.contentdata
-    with clientLock:
-        if mqttClient:
-            mqttClient.publish(message)
 
 
 class MqttClient:
@@ -201,14 +243,9 @@ class MqttClient:
                     self.subscribe_timer.start()
             return
         for s in self.subscriptions:
-            self.mqttClient.unsubscribe(str(s[TOPIC]))
+            self.mqttClient.unsubscribe(str(s['topic']))
         self.subscriptions = subscriptions
         for s in self.subscriptions:
             self.mqttClient.subscribe(s['topic'], s['qos'])
 
-
-fogClient = IoFogClient()
-mqttClient = None
-config = None
-update_config()
 fogClient.establish_message_ws_connection(MessageListener())

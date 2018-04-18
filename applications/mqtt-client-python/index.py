@@ -1,49 +1,38 @@
-import json
 import threading
-import jsonschema
+
 from iofog_container_sdk.client import IoFogClient, IoFogException
 from iofog_container_sdk.iomessage import IoMessage
 from iofog_container_sdk.listener import *
 from paho.mqtt import client
 from paho.mqtt.client import MQTT_ERR_SUCCESS
-from util import *
+
+from tempus.edge.proto import MessageProtocols_pb2 as protocols
+from tempus.edge.proto import MessageTypes_pb2 as messageTypes
+from tempus.edge.proto import JsonDataMessage_pb2 as te_jsonMsg
+from tempus.edge.proto import OpcMessage_pb2 as te_opcMsg
+from tempus.edge.proto import MqttMessage_pb2 as te_mqttMsg
+
+
+import config
+
 
 clientLock = threading.Lock()
 
 
-def update_config():
-    attempt_limit = 5
-    global config
-
-    while attempt_limit > 0:
-        try:
-            config = fogClient.get_config()
-            break
-        except IoFogException, ex:
-            attempt_limit -= 1
-            print str(ex)
-
-    if attempt_limit == 0:
-        print 'Config update failed :('
-        return
-
-    try:
-        jsonschema.validate(config, config_schema)
-    except jsonschema.ValidationError as e:
-        print 'Error while validating config: {}'.format(e)
-        print 'Nothing is updated'
-        return
-
-    print 'Got new valid config: {}'.format(config)
-    update_mqtt_client(config)
+def update():
+    config.updateTrackConfig()
+    update_mqtt_client()
 
 
-def update_mqtt_client(config):
+def update_mqtt_client():
     global mqttClient
+    broker = config.getBroker()
+    user = config.getUser()
+    cert = config.getCert()
     if not mqttClient:
-        mqttClient = MqttClient(config[BROKER], config.get(USER), config.get(CA_CERT))
+        mqttClient = MqttClient(broker, user, cert)
         mqttClient.connect()
-    elif mqttClient.broker != config[BROKER] or mqttClient.ca_cert != config.get(CA_CERT):
+    elif mqttClient.broker != broker or mqttClient.ca_cert != cert:
         with mqttClient.reconnect_lock:
             mqttClient.reconnect_needed = False
             if mqttClient.reconnect_timer:
@@ -56,25 +45,66 @@ def update_mqtt_client(config):
         while mqttClient.connected:
             pass
         with clientLock:
-            mqttClient = MqttClient(config[BROKER], config.get(USER), config.get(CA_CERT))
+            mqttClient = MqttClient(broker, user, cert)
         mqttClient.connect()
-    mqttClient.update_subscriptions(config.get(SUBSCRIPTIONS, []))
-
-
-class ControlListener(IoFogControlWsListener):
-    def on_control_signal(self):
-        update_config()
+    mqttClient.update_subscriptions(config.getSubscriptions())
 
 
 class MessageListener(IoFogMessageWsListener):
-    def on_message(self, io_msg):
-        if io_msg.infotype == MQTT_INFO_TYPE and io_msg.infoformat == MQTT_INFO_FORMAT:
-            mqtt_message = json.loads(str(io_msg.contextdata))
-            callPublish(mqtt_message, io_msg)
-        else:
-            mqtt_messages = config.get(PUBLISHERS, [])
-            for msg in mqtt_messages:
-                callPublish(msg, io_msg)
+    def on_message(self, msg):
+        # create empty mqtt message
+        mqttMsg = {}
+
+        try:
+            # process iofog message
+            ptcl = msg.contentdata[0]
+
+            # handle config messages
+            if ptcl == protocols.CONFIG:
+                update() # update configs
+            
+            # handle data messages
+            elif ptcl == protocols.DATA:
+                typ = msg.contentdata[1] # check what type of data message this is
+
+                # handle opc message
+                if typ == messageTypes.OPC:
+                    opcMsg = te_opcMsg.OpcMessage().ParseFromString(msg.contentdata[2:])
+                    mqttMsg['topic'] = opcMsg.device_name
+                    mqttMsg['qos'] = 2
+                    oneof = opcMsg.WhichOneof('value')
+                    if oneof:
+                        vals = {
+                            'value_boolean': opcMsg.value_boolean,
+                            'value_double': opcMsg.value_double,
+                            'value_float': opcMsg.value_float,
+                            'value_int32': opcMsg.value_int32,
+                            'value_int64': opcMsg.value_int64,
+                            'value_string': opcMsg.value_string,
+                        }
+                        mqttMsg['payload'] = vals[oneof]
+
+
+                # handle mqtt message
+                elif typ == messageTypes.MQTT:
+                
+                # handle json message
+                elif typ == messageTypes.JSON:
+                
+                # handle all other date message types
+                else:
+                    print("could not handle iofog message: " + str(msg))
+
+            # handle all other ptcls
+            else:
+                print("could not handle iofog message: " + str(msg))
+
+        except Exception as e:
+            print("could not handle iofog message: " + str(msg))
+        
+        # send msg if it was created
+        if mqttMsg:
+            mqttClient.publish(mqttMsg)
 
 def callPublish(message, io_msg):
     message[PAYLOAD] = io_msg.contentdata
@@ -90,12 +120,9 @@ class MqttClient:
         self.broker = broker
         self.ca_cert = ca_cert
         self.subscriptions = []
-        self.mqttClient = client.Client(fogClient.id, transport=broker.get(TRANSPORT, TCP))
+        self.mqttClient = client.Client(client_id="tempus-edge-mqtt-client")
         if user:
-            self.mqttClient.username_pw_set(user[USERNAME], user.get(PASSWORD))
-        if ca_cert:
-            write_certificate(ca_cert)
-            self.mqttClient.tls_set(CERT_FILE_LOCATION)
+            self.mqttClient.username_pw_set(user['username'], user.get('password'))
         self.mqttClient.on_connect = MqttClient.on_connect
         self.mqttClient.on_disconnect = MqttClient.on_disconnect
         self.mqttClient.on_message = MqttClient.on_message
@@ -117,14 +144,12 @@ class MqttClient:
 
     def _connect_to_broker(self):
         try:
-            self.mqttClient.connect(self.broker[HOST],
-                                    port=self.broker.get(PORT, DEFAULT_PORT),
-                                    bind_address=self.broker.get(BIND_ADDRESS, DEFAULT_ADDRESS))
+            self.mqttClient.connect(self.broker['host'], port=self.broker['port'])
             self.connectAttempt = 0
             self.mqttClient.loop_forever()
-        except Exception, e:
-            print "Error while connecting to broker: {}. Reconnecting...".format(e)
-            print e.message
+        except Exception as e:
+            print("Error while connecting to broker: " + str(e) + ". Reconnecting...")
+            print(e.message)
             with self.reconnect_lock:
                 if self.reconnect_needed:
                     sleep_time = 1 << self.connectAttempt * self.connectTimeout
@@ -152,29 +177,21 @@ class MqttClient:
             # to get here, reconnection is successful
             MqttClient.connected = True
 
-
-
     @staticmethod
     def on_connect(client, userdata, flags, rc):
         if rc:
-            print "Connection to broker refused. Error code is {}.".format(rc)
+            print("Connection to broker refused. Error code is " + str(rc))
         else:
             MqttClient.connected = True
 
     @staticmethod
     def on_message(client, userdata, msg):
         io_mesage = IoMessage()
-        io_mesage.infotype = MQTT_INFO_TYPE
-        io_mesage.infoformat = MQTT_INFO_FORMAT
-        io_mesage.contextdata = bytearray(json.dumps({
-            TOPIC: msg.topic,
-            QOS: msg.qos
-        }))
         io_mesage.contentdata = bytearray(msg.payload)
         fogClient.post_message_via_socket(io_mesage)
 
     def publish(self, message):
-        self.mqttClient.publish(message[TOPIC], message[PAYLOAD], message[QOS])
+        self.mqttClient.publish(message['topic'], message['payload'], message['qos'])
 
     def update_subscriptions(self, subscriptions):
         if not MqttClient.connected:
@@ -187,7 +204,7 @@ class MqttClient:
             self.mqttClient.unsubscribe(str(s[TOPIC]))
         self.subscriptions = subscriptions
         for s in self.subscriptions:
-            self.mqttClient.subscribe(s[TOPIC], s[QOS])
+            self.mqttClient.subscribe(s['topic'], s['qos'])
 
 
 fogClient = IoFogClient()
@@ -195,4 +212,3 @@ mqttClient = None
 config = None
 update_config()
 fogClient.establish_message_ws_connection(MessageListener())
-fogClient.establish_control_ws_connection(ControlListener())

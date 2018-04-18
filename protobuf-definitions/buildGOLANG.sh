@@ -6,10 +6,12 @@ SRC_DIR=$CURR_DIR/src/main/protobuf
 DEST_DIR=$CURR_DIR/go-protobuf-output
 
 # recreate output directory
+echo "Setting up go output directory..."
 rm -rf    $DEST_DIR
 mkdir -p  $DEST_DIR/src
 
 # compile to go source code
+echo "Compiling protobuf defs into golang src code..."
 protoc \
   --proto_path=$SRC_DIR \
   --go_out=$DEST_DIR/src \

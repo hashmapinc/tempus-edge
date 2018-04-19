@@ -1,0 +1,511 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Getting Started Tutorial &mdash; Tempus Edge 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Edge Applications" href="../applications/applications.html" />
+    <link rel="prev" title="Tempus Edge - Edge Compute Framework" href="../index.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Tempus Edge
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#requirements">Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#install-iofog">Install IoFog</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#provision-the-fog">Provision the Fog</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id5">}</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">}</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id15">}</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id20">}</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id25">}</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id30">}</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../applications/applications.html">Edge Applications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer/developer.html">Developer Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_fog/dev_fog.html">Development Fog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Tempus Edge</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Getting Started Tutorial</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/tutorial/tutorial.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="getting-started-tutorial">
+<span id="tutorial"></span><h1>Getting Started Tutorial<a class="headerlink" href="#getting-started-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>This document discusses how IoFog can be used to filter data at the edge. The IoFog platform provides a way to run code remotely.The code/logic which we want to run is packaged as small micro services which are provided as a docker images.IoFog provide interface to communicate between
+these micro services. Flow of data is assume to be starting from a microservices which generate time series data. This data is then filtered using Tempus Filter service. Using MQTT service the filtered data is sent to ThingsBoard server.</p>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<p>Tempus IoFog services has following feature:</p>
+<ul class="simple">
+<li>Create Micro-service for creating simulated timeseries data.</li>
+<li>Create a filter service which filter out data at source.</li>
+<li>Send only filtered data to the ThingsBoard.</li>
+</ul>
+</div>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>JDK 1.8 at a minimum</li>
+<li>Maven 3.1 or newer</li>
+<li>Git client (to build locally)</li>
+</ul>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="install-iofog">
+<h3>Install IoFog<a class="headerlink" href="#install-iofog" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://iotracks.com/signup">Create an account with IOTRACKS to use IoFog service here</a></p>
+<p><a class="reference internal" href="../dev_fog/dev_fog.html#dev-fog"><span class="std std-ref">Next, setup your docker-based development fog here.</span></a></p>
+</div>
+<div class="section" id="provision-the-fog">
+<h3>Provision the Fog<a class="headerlink" href="#provision-the-fog" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://iotracks.com/login">Login</a> to IoFog to access tracks and fogs.</p>
+<p>After login go to the fog tab drag a fog instance on fog page.And click on new fog instance.</p>
+<img alt="alternate text" class="align-left" src="../_images/1.png" />
+<p>Click on new fog instance.On right hand you will see properties of fog.
+Press the generate key to get id of the fog for provisioning.
+&lt;img src=”./images/readme_images/2.png” width=”910” height=”545”/&gt;</p>
+<p>Go to your Linux command line, type ‘sudo iofog provision ABCDWXYZ’ and replace the ABCDWXYZ
+with your provisioning key (it is case sensitive) and verify the results
+You can follow below link to get started:</p>
+<blockquote>
+<div><a class="reference external" href="https://iotracks.com/build-sample">https://iotracks.com/build-sample</a></div></blockquote>
+<p>### Creating edge applications</p>
+<p>IoFog provides an SDK in four languages to create edge applications:
+1) Java
+2) Python
+3) NodeJS
+4) Go</p>
+<p>### Publishing edge applications</p>
+<p>1.Log in to the [ioAuthoring page](<a class="reference external" href="https://iotracks.com/login">https://iotracks.com/login</a>).</p>
+<p>2.Use the “Publish” menu to access the publishing portal.</p>
+<p>3.Drag and drop the proper hardware element to the main area. Make sure the element matches the hardware you want your applicaiton to run on.</p>
+<p>4.Add Name to your Element.</p>
+<dl class="docutils">
+<dt>5.Add Container Image URL. It is the path to repository where the container is posted</dt>
+<dd>Be sure to enter your container image string properly.</dd>
+</dl>
+<p>&lt;img src=”./images/readme_images/3.png” width=”910” height=”545”&gt;&lt;/img&gt;</p>
+<p>Following link discuss in detail how to create and publish microservices:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`https://iotracks.com/creatingmicroservices</span>&#160; <span class="pre">`</span></code></p>
+<p>### Configuring Services</p>
+<ol class="arabic">
+<li><p class="first"><strong>Time Series Service</strong>:</p>
+<blockquote>
+<div><p>No Configuration Needed.</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Json Filter Service</strong>:</p>
+</li>
+</ol>
+<blockquote>
+<div>Basic building block of the service has 3 terms:</div></blockquote>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>json
+{</p>
+<blockquote>
+<div>“term”: “value.density”,
+“OP” : “GTE”,
+“value”:   0</div></blockquote>
+<div class="section" id="id5">
+<h4>}<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><ol class="lowerroman simple">
+<li><strong>term</strong>   : The term in json on which filter needs to be applied. The child term can be</li>
+</ol>
+<blockquote>
+<div>accessec using dot.
+Example:</div></blockquote>
+</div></blockquote>
+<p><a href="#id6"><span class="problematic" id="id7">``</span></a><a href="#id8"><span class="problematic" id="id9">`</span></a>json
+{</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>“range”: {</dt>
+<dd>“start”:0,
+“end”:100</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</div>
+<div class="section" id="id10">
+<h4>}<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><p>if you want to filter on “start” mention “range.start” in the term.</p>
+<ol class="lowerroman simple" start="2">
+<li><strong>OP</strong>  : Operation is what operation you need to perform on the the term.Allowed operation<ol class="arabic">
+<li>LEQ : less than equal</li>
+<li>GEQ : greater than equal</li>
+<li>LT  : less than</li>
+<li>GT  : greater tham</li>
+<li>EQ  : equals</li>
+<li>NEQ : not equal</li>
+</ol>
+</li>
+</ol>
+<p>iii)**value**  : Value with which operation on term need to be done</p>
+<p>Filters are furthur divided into
+a) String Filters</p>
+<ol class="loweralpha simple" start="2">
+<li>Double Filters</li>
+<li>Boolean Filters</li>
+</ol>
+</div></blockquote>
+<p><a href="#id11"><span class="problematic" id="id12">``</span></a><a href="#id13"><span class="problematic" id="id14">`</span></a>json
+{</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>“DOUBLE”:{</dt>
+<dd>“term”: “value.density”,
+“OP” : “GTE”,
+“value”:   0</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</div>
+<div class="section" id="id15">
+<h4>}<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><p>This tells filter type of term.</p>
+<p>To create complex query <strong>AND</strong> and <strong>OR</strong> Filters are also provided.
+AND/OR filter</p>
+</div></blockquote>
+<p><a href="#id16"><span class="problematic" id="id17">``</span></a><a href="#id18"><span class="problematic" id="id19">`</span></a>json
+{</p>
+<blockquote>
+<div>“EXP1”:”..”,
+“EXP2”:”..”</div></blockquote>
+</div>
+<div class="section" id="id20">
+<h4>}<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div>Both EXP1/EXP2 both can be again AND ,OR filter or and of String,Double or Boolean Filter</div></blockquote>
+<p><a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a>json
+{</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>“OR”: {</dt>
+<dd><dl class="first docutils">
+<dt>“EXP1”: {</dt>
+<dd><dl class="first docutils">
+<dt>“AND”: {</dt>
+<dd><dl class="first docutils">
+<dt>“EXP1”: {</dt>
+<dd><dl class="first docutils">
+<dt>“DOUBLE”: {</dt>
+<dd>“term”: “value.density”,
+“OP”: “GTE “,
+“value”: 0</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>},
+“EXP2”: {</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>“DOUBLE”: {</dt>
+<dd>“term”: “value.density”,
+“OP”: “LTE”,
+“value”: 1</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p class="last">}</p>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>},
+“EXP2”: {</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>“STRING”: {</dt>
+<dd>“term”: “value.TYPE.id”,
+“OP”: “NEQ”,
+“value”: “TEST”</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</div>
+<div class="section" id="id25">
+<h4>}<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h4>
+<p>3)**MQTT-Service**</p>
+<blockquote>
+<div><p>For MQTT service you need to define</p>
+<ol class="lowerroman simple">
+<li>Publishers</li>
+<li>Broker</li>
+<li>User of device in things board</li>
+</ol>
+<p>Example:</p>
+</div></blockquote>
+<p><a href="#id26"><span class="problematic" id="id27">``</span></a><a href="#id28"><span class="problematic" id="id29">`</span></a>json
+{</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>“subscriptions”: [{</dt>
+<dd>“topic”: “v1/devices/me/telemetry”,
+“qos”: 2</dd>
+</dl>
+<p>}],
+“publishers”: [{</p>
+<blockquote>
+<div>“topic”: “v1/devices/me/telemetry”,
+“qos”: 2</div></blockquote>
+<p>}],
+“broker”: {</p>
+<blockquote>
+<div>“host”: “192.168.1.183”,
+“port”: 1883</div></blockquote>
+<p>},
+“user”: {</p>
+<blockquote>
+<div>“username”: “ioFogToken”,
+“password”: ” “</div></blockquote>
+<p>}</p>
+</div></blockquote>
+</div>
+<div class="section" id="id30">
+<h4>}<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h4>
+<p>## Usage</p>
+<ol class="arabic simple">
+<li>Publish the 3 tempus services as discussed above.</li>
+</ol>
+<p>2) Configure the services.
+2) Create a track with  services as shown below.</p>
+<p>&lt;img src=”./images/readme_images/4.png” width=”910” height=”545”&gt;&lt;/img&gt;</p>
+<ol class="arabic simple" start="4">
+<li>You can check data flowing into ThingsBoard.</li>
+</ol>
+<p>## License</p>
+<p>Licensed under the Apache License, Version 2.0 (the “License”);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+<blockquote>
+<div><a class="reference external" href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></div></blockquote>
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an “AS IS” BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../applications/applications.html" class="btn btn-neutral float-right" title="Edge Applications" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral" title="Tempus Edge - Edge Compute Framework" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Hashmap, Inc.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

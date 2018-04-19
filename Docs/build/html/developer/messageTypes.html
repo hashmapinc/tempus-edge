@@ -1,0 +1,265 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Message Types &mdash; Tempus Edge 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Development Fog" href="../dev_fog/dev_fog.html" />
+    <link rel="prev" title="Message Protocols" href="messageProtocols.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Tempus Edge
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/tutorial.html">Getting Started Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../applications/applications.html">Edge Applications</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="developer.html">Developer Documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="developer.html#repository-standards">Repository Standards</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="trackConfiguration.html">Track Configuration</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="messages.html">Track Messaging Standards</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="messages.html#message-anatomy">Message Anatomy</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="messages.html#protocols-and-types">Protocols and Types</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dev_fog/dev_fog.html">Development Fog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Tempus Edge</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="developer.html">Developer Documentation</a> &raquo;</li>
+        
+          <li><a href="messages.html">Track Messaging Standards</a> &raquo;</li>
+        
+      <li>Message Types</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/developer/messageTypes.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="message-types">
+<span id="developer-messagetypes"></span><h1>Message Types<a class="headerlink" href="#message-types" title="Permalink to this headline">¶</a></h1>
+<p>In general, a <cite>messageType</cite> will be similar to a <cite>messageProtocol</cite>. It will also be a <cite>byte</cite> value and will be the <strong>second byte</strong> in the ioFog message content field. The type will serve to further specify how to decode the incoming message content or further specify what action a container should take when receiving a message.</p>
+<p>The message types for each message protocol are defined below:</p>
+<div class="section" id="configuration-message-types">
+<h2>Configuration Message Types<a class="headerlink" href="#configuration-message-types" title="Permalink to this headline">¶</a></h2>
+<p>Protocol Byte  | Type Byte | Protobuf Enum | Description
+————- | ————- | ————- | ————-
+<cite>001</cite>  | <cite>000</cite> | <cite>UPDATE_ALERT</cite> | informs the receiver that new configs are available. The receiver is expected to update their own configs.
+<cite>001</cite>  | <cite>001</cite> | <cite>TRACK_CONFIG_SUBMISSION</cite> | informs the receiver that a new track config is contained in this message and that the receiver should parse and persist the new track config. The <cite>track-manager</cite> is the intended consumer of this message type. <strong>NOTE:</strong> this config will be accepted as the new config by the track manager. This means changes will not be ‘merged’ with current configs. Use this message type when you want to submit a completely new config. Use other message types to update individual pieces of a track’s configuration.
+<cite>001</cite>  | <cite>002</cite> | <cite>TRACK_METADATA_SUBMISSION</cite> | this message contains a TrackMetadata protobuf byte array and commands the receiver to update a track’s metadata.
+<cite>001</cite>  | <cite>003</cite> | <cite>MQTT_CONFIG_SUBMISSION</cite> | this message contains an MqttConfig protobuf byte array and commands the receiver to update a track’s MQTT configuration.
+<cite>001</cite>  | <cite>004</cite> | <cite>OPC_CONFIG_SUBMISSION</cite> | this message contains an OpcConfig protobuf byte array and commands the receiver to update a track’s OPC configuration.
+<cite>001</cite>  | <cite>005</cite> | <cite>OPC_SUBSCRIPTIONS_SUBMISSION</cite> | this message contains an OpcConfig.subs value (OpcConfig.Subscriptions protobuf message) and commands the receiver to u pdate a track’s OPC configuration subscriptions value.</p>
+</div>
+<div class="section" id="data-message-types">
+<h2>Data Message Types<a class="headerlink" href="#data-message-types" title="Permalink to this headline">¶</a></h2>
+<p>Protocol Byte  | Type Byte | Protobuf Enum | Description
+————- | ————- | ————- | ————-
+<cite>002</cite>  | <cite>000</cite> | <cite>JSON</cite> | used to define a message that is a protobuf byte array that will decode into a JSON string that will need to be parsed by the receiver.
+<cite>002</cite>  | <cite>001</cite> | <cite>MQTT</cite> | used to define a message that is a protobuf byte array that will decode into an MQTT message. This message contains everything necessary for the <cite>mqtt-client</cite> to send this message in MQTT format.
+<cite>002</cite>  | <cite>002</cite> | <cite>OPC</cite> | used to define a message that is a protobuf byte array that will decode into an OPC message. This message contains everything necessary for the <cite>opc-client</cite> to send this message in OPC format.</p>
+<p>NOTE: new message types will be defined here as new types become necessary. Please send a pull request if you’d like to suggest other types!</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../dev_fog/dev_fog.html" class="btn btn-neutral float-right" title="Development Fog" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="messageProtocols.html" class="btn btn-neutral" title="Message Protocols" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Hashmap, Inc.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

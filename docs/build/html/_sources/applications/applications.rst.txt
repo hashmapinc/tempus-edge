@@ -1,5 +1,0 @@
-.. _applications:
-
-#################
-Edge Applications
-#################

@@ -12,9 +12,6 @@ Tempus Edge currently supports the following edge applications:
 :ref:`Golang MQTT Client <applications-mqtt-client-go>`
   MQTT client implemented in golang.
 
-:ref:`Python MQTT Client <applications-mqtt-client-python>`
-  MQTT client implemented in python.
-
 :ref:`OPC Client <applications-opc-client>`
   OPC client for monitoring and publishing to OPC UA servers.
 
@@ -27,8 +24,9 @@ Tempus Edge currently supports the following edge applications:
 
 Additionaly, the following microservices exists but are currently undocumented:
 
-- Timeseries Generator - generates changing timeseries data
-- JSON Filter - filters incoming JSON 
+- Timeseries Generator - generates changing timeseries data.
+- JSON Filter - filters incoming JSON.
+- Python MQTT Client - Python implementation of an MQTT client.
 
 .. toctree::
   :maxdepth: 1
@@ -36,7 +34,6 @@ Additionaly, the following microservices exists but are currently undocumented:
 
   json-translator
   mqtt-client-go
-  mqtt-client-python
   opc-client
   opc-tag-filter
   track-manager

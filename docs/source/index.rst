@@ -8,10 +8,10 @@ Tempus Edge - Edge Compute Framework
 `Tempus Edge <https://www.hashmapinc.com/tempusedge/>`_  is an edge framework for deploying microservices (edge applications) to the edge.
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Contents:
+  :maxdepth: 1
+  :caption: Contents:
 
-   tutorial/tutorial
-   applications/applications
-   developer/developer
-   dev_fog/dev_fog
+  tutorial/tutorial
+  applications/applications
+  developer/developer
+  dev_fog/dev_fog

@@ -14,8 +14,8 @@ Repository Standards
 NOTE: Please submit pull requests to udpate these rules if you think something else makes more sense!
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Resources:
+  :maxdepth: 1
+  :caption: Resources:
 
-   trackConfiguration
-   messages
+  trackConfiguration
+  messages

@@ -20,27 +20,12 @@ This will also result in separate TrackConfig entries for MqttConfig and TempusC
 
 Building
 ========
-Make sure your ``$GOPATH`` contains the ``src`` directory when you're ready to build.
-
 Build the project and docker image using:
 
 .. code-block:: bash
 
-  make docker
+  make
 
-
-Usage
-=====
-Build and deploy this image to dockerhub using:
-
-.. code-block:: bash
-
-  make deploy
-
-
-Publish the image to ioFog. From there, the image can be used in your tracks.
-
-Any configurations you need should be provided through the track-manager.
 
 Supported Messages
 ==================

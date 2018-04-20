@@ -14,7 +14,7 @@ On startup and when new ``CONFIG UPDATE`` messages arrive, this edge application
 
 Building
 ========
-Build the project and docker image using:
+Build the edge application and docker image using:
 
 .. code-block:: bash
 

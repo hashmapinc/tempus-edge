@@ -104,6 +104,16 @@ func PublishJSONDataMessage(msg *proto.JsonDataMessage) (err error) {
 	return
 }
 
+// PublishJSONString converts msg into an MqttMessage and pushes it to the outbox channel
+func PublishJSONString(json []byte) {
+	mqttMsg := &proto.MqttMessage{
+		Qos:     2,
+		Topic:   "v1/devices/me/telemetry",
+		Payload: json,
+	}
+	msgOutboxChannel <- mqttMsg
+}
+
 // PublishOPCMessage converts msg into an MqttMessage and Publishes it
 func PublishOPCMessage(msg *proto.OpcMessage) error {
 	// get payload

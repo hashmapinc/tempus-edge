@@ -42,7 +42,7 @@ func OnMqttMessage(mqttClient paho.Client, msg paho.Message) {
 	iofogPayload = append(header, iofogPayload...)
 
 	// send payload
-	err = iofog.SendWSMessage(iofogPayload, iofog.Client)
+	err = iofog.SendWSMessage(iofogPayload)
 	if err != nil {
 		logger.Println("recieved error when sending iofog message: ", err.Error())
 	}

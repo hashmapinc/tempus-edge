@@ -34,7 +34,10 @@ func main() {
 	}
 	// connect msg handler to ws data channel
 	logger.Println("Successfully connected to iofog!")
-	iofog.ConnectListener(client.OnIofogMessage, iofog.Client)
+
+	// listen for iofog messages
+	logger.Println("Listening for iofog messages...!")
+	client.ListenForIofogData(&iofog.DataChannel, &iofog.ReceiptChannel)
 
 	// connect mqtt msg handler
 	mqtt.MsgHandler = client.OnMqttMessage

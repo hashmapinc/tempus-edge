@@ -1,12 +1,11 @@
-package iofog_test
+package iofog
 
 import (
 	"bytes"
-	"com/hashmapinc/tempus/edge/iofog"
 	"com/hashmapinc/tempus/edge/proto"
 	"testing"
 
-	sdk "github.com/iotracks/container-sdk-go"
+	sdk "github.com/iofog/container-sdk-go"
 )
 
 //=============================================================================
@@ -37,42 +36,13 @@ var messageTable = []struct {
 }
 
 // Checks the type of the iofog client
-func TestConnectListener(t *testing.T) {
-	// create client
-	dChannel := make(chan *sdk.IoMessage, 0)
-	rChannel := make(chan *sdk.PostMessageResponse, 0)
-	clientStub := &testClient{dataChannel: dChannel, recptChannel: rChannel}
-
-	// create listener
-	listener := func(msg *sdk.IoMessage) error {
-		t.Logf("Heard: %v", msg)
-		clientStub.lastMessage = msg
-		return nil
-	}
-
-	// connect the listener to the client
-	iofog.ConnectListener(listener, clientStub)
-
-	// write test messages to the channel
-	for _, message := range messageTable {
-		msg := &sdk.IoMessage{ContentData: message.payload}
-		dChannel <- msg
-		dChannel <- msg // doing this twice ensures the first one has been handled by its go routine
-
-		if clientStub.lastMessage == nil || !bytes.Equal(msg.ContentData, clientStub.lastMessage.ContentData) {
-			t.Errorf("clientStub.lastMessage is null (shouldn't be) OR listener failed to update the client's last message")
-		}
-	}
-}
-
-// Checks the type of the iofog client
 func TestSendWSMessage(t *testing.T) {
 	// create client
 	clientStub := &testClient{}
 
 	for _, message := range messageTable {
 		msg := &sdk.IoMessage{ContentData: message.payload}
-		iofog.SendWSMessage(message.payload, clientStub)
+		SendWSMessage(message.payload, clientStub)
 
 		t.Logf("sent msg: %v", msg)
 		t.Logf("got msg: %v", clientStub.lastMessage)

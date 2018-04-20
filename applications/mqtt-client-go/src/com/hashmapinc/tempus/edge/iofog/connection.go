@@ -6,7 +6,6 @@ package iofog
 import (
 	"log"
 	"os"
-	"runtime"
 
 	sdk "github.com/iofog/container-sdk-go"
 )
@@ -25,34 +24,27 @@ type DataClient interface {
 var logger = log.New(os.Stderr, "", log.LstdFlags|log.LUTC|log.Lshortfile)
 
 // Client holds the connection to the local ioFog agent
-var Client = &sdk.IoFogClient{}
+var client = &sdk.IoFogClient{}
+
+// DataChannel holds all incoming iofog messages
+var DataChannel <-chan *sdk.IoMessage
+
+// ReceiptChannel holds all incoming iofog messages
+var ReceiptChannel <-chan *sdk.PostMessageResponse
 
 // StartConnection connects to the ioFog agent
 func StartConnection() (err error) {
-	Client, err = sdk.NewDefaultIoFogClient()
+	client, err = sdk.NewDefaultIoFogClient()
 	if err != nil {
 		logger.Println("received erorr when starting iofog connection:", err.Error())
+	} else {
+		DataChannel, ReceiptChannel = client.EstablishMessageWsConnection(100, 100)
 	}
 	return
 }
 
-// ConnectListener connects the listener to incoming ioFog data messages
-func ConnectListener(lstnr Listener, client DataClient) {
-	// get ws connection IoMessage data channel with buffer size = numCPU cores
-	dataChannel, _ := client.EstablishMessageWsConnection(runtime.NumCPU(), 0)
-
-	// listen forever
-	go func() {
-		for {
-			msg := <-dataChannel // get next message from the data channel
-			logger.Println("Received iofog message!")
-			lstnr(msg)
-		}
-	}()
-}
-
 // SendWSMessage sens a ws message to iofog with payload as the IoMessage content
-func SendWSMessage(payload []byte, client DataClient) (err error) {
+func SendWSMessage(payload []byte) (err error) {
 	// create msg
 	msg := &sdk.IoMessage{ContentData: payload}
 

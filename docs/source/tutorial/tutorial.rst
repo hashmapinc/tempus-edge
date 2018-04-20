@@ -26,7 +26,7 @@ Install IoFog
 =============
 `Create an account with IOTRACKS to use IoFog service here <https://iotracks.com/signup>`_
 
-:ref:`Next, setup your docker-based development fog here. <dev_fog>`
+:ref:`Next, setup your docker-based development fog here. <developer-devFog>`
     
 Provision the Fog
 =================

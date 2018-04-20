@@ -149,8 +149,8 @@ func parseOptsFromConf(mqttConfig *proto.MqttConfig) (opts *paho.ClientOptions, 
 	logger.Printf("Parsing mqttConf:\n%v\n into client options struct\n", mqttConfig)
 
 	opts = paho.NewClientOptions().
-		SetUsername(mqttConfig.GetUser().GetPassword()).
-		SetPassword(mqttConfig.GetUser().GetUsername()).
+		SetUsername(mqttConfig.GetUser().GetUsername()).
+		SetPassword(mqttConfig.GetUser().GetPassword()).
 		AddBroker(fmt.Sprintf("tcp://%s:%d", mqttConfig.GetBroker().GetHost(), mqttConfig.GetBroker().GetPort())).
 		SetClientID("tempus::edge::mqtt")
 

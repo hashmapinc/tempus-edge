@@ -5,12 +5,14 @@ Golang MQTT Client
 ##################
 
 This edge application is designed to act as a 2 way client between ioFog messages and MQTT messages. It is responsible for:
+
 - accepting incoming MQTT messages and converting them to outgoing ioFog messages
 - accepting incoming ioFog messages and converting them to outgoing MQTT messages
 
 At this time, MQTT client is the core communication service between Tempus Edge and Tempus Cloud. Because of the way configuration is currently done, each Tempus Edge track will only support 1 MQTT client, which will always need to be Tempus Cloud.
 
 In the future, this edge application may be split into the following 2 applications:
+
 - a dedicated Tempus Cloud client
 - a standard MQTT client
 

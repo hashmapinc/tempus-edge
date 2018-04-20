@@ -2,20 +2,25 @@
 Developer Documentation
 #######################
 
-Repository Standards
-====================
-- Application folders should be all lower case with '-' to separate words; no underscores, no spaces, no camelCase.
-- Application folders should contain Dockerfiles defining the applicaiton image.
-  - Docker images should be named using the pattern `hashmapinc/tempus-edge-<APPLICATION-NAME>:<VERSION>`
-- Application folders should contain a README.md describing the application and usage. This includes instructions for building and running both the Docker image and the source code.
-- Build files / directories should not be committed to the repository. This means no JAR files, no \*.pyc files, and no mvn \*\*/target/ build directories.
-- All commits should result in buildable code. The code may be buggy, but please do not commit unbuildable code if you can help it.
+Welcome, developers!
 
-NOTE: Please submit pull requests to udpate these rules if you think something else makes more sense!
+To make it easy to use and contribute to Tempus Edge, we have provided the following documentation:
+
++-----------------------------------------------------------+---------------------------------------------------------------------+
+| :ref:`Repository Standards <developer-repoStandards>`     | describe general guidelines for the Tempus Edge repository.         |
++-----------------------------------------------------------+---------------------------------------------------------------------+
+| :ref:`Development Fog <developer-devFog>`                 | describes how to create a docker-based development fog environment. |
++-----------------------------------------------------------+---------------------------------------------------------------------+
+| :ref:`Track Configuration <developer-trackConfiguration>` | describes how tracks are configured.                                |
++-----------------------------------------------------------+---------------------------------------------------------------------+
+| :ref:`Tempus Edge Messaging <developer-messages>`         | describes how to use Tempus Edge messages.                          |
++-----------------------------------------------------------+---------------------------------------------------------------------+
 
 .. toctree::
   :maxdepth: 1
-  :caption: Resources:
+  :caption: Sections:
 
+  repoStandards
+  devFog
   trackConfiguration
   messages

@@ -2,8 +2,8 @@
 project = 'Tempus Edge'
 copyright = '2018, Hashmap, Inc'
 author = 'Hashmap, Inc'
-version = '0.1'
-release = '0.1.0'
+version = '0.1.0'
+release = '0.1'
 
 # -- General configuration ---------------------------------------------------
 
@@ -21,13 +21,20 @@ pygments_style = 'sphinx'
 # -- Options for HTML output -------------------------------------------------
 html_favicon = './_images/favicon.png'
 html_theme = 'sphinx_rtd_theme'
+html_show_sourcelink = True
 html_static_path = ['_static']
 htmlhelp_basename = 'TempusEdgedoc'
-
-html_context = {
-    'css_files': [
-        '_static/theme_overrides.css',  # override wide tables in RTD theme
-    ],
+html_theme_options = {
+    'logo_only': False,
+    'display_version': False,
+    'prev_next_buttons_location': 'both',
+    'style_external_links': True,
+    # Toc options
+    'collapse_navigation': False,
+    'sticky_navigation': True,
+    'navigation_depth': -1,
+    'includehidden': True,
+    'titles_only': True
 }
 
 def setup(app):

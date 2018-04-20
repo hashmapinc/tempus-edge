@@ -14,7 +14,10 @@ help:
 
 .PHONY: help Makefile
 
-auto:
+clean:
+	rm -rf ./build
+
+auto: clean html
 	sphinx-autobuild $(SOURCEDIR) $(BUILDDIR)
 
 # Catch-all target: route all unknown targets to Sphinx using the new

@@ -15,7 +15,6 @@ Tempus IoFog services has following feature:
 * Create a filter service which filter out data at source. 
 * Send only filtered data to the ThingsBoard.
 
-
 Requirements
 ============
 
@@ -23,18 +22,14 @@ Requirements
 * Maven 3.1 or newer
 * Git client (to build locally)
 
-
-Getting Started
-===============
-
 Install IoFog
--------------
+=============
 `Create an account with IOTRACKS to use IoFog service here <https://iotracks.com/signup>`_
 
 :ref:`Next, setup your docker-based development fog here. <dev_fog>`
     
 Provision the Fog
------------------
+=================
 `Login <https://iotracks.com/login>`_ to IoFog to access tracks and fogs.        
 
 After login go to the fog tab drag a fog instance on fog page.And click on new fog instance.
@@ -47,11 +42,11 @@ Press the generate key to get id of the fog for provisioning.
 
 .. image:: /_images/tutorial/2.png   
 
-Go to your Linux command line, type `sudo iofog provision ABCDWXYZ` and replace the ABCDWXYZ with your provisioning key (it is case sensitive) and verify the results
+Go to your Linux command line, type ``sudo iofog provision ABCDWXYZ`` and replace the ABCDWXYZ with your provisioning key (it is case sensitive) and verify the results
 
 
 Creating edge applications
---------------------------
+==========================
 IoFog provides an SDK in four languages to create edge applications:
 
 1. Java
@@ -60,7 +55,7 @@ IoFog provides an SDK in four languages to create edge applications:
 4. Go
 
 Publishing edge applications
-----------------------------
+============================
 1. `Log in to the ioAuthoring page. <https://iotracks.com/login>`_
 
 2. Use the "Publish" menu to access the publishing portal.
@@ -78,7 +73,7 @@ Publishing edge applications
 `Click here to see in detail how to create and publish microservices. <https://iotracks.com/creatingmicroservices>`_
 
 Configuring Services
---------------------
+====================
 1. **Time Series Service**:
     No Configuration Needed.
 2. **Json Filter Service**:
@@ -212,7 +207,7 @@ Configuring Services
     }
 
 Usage
------
+=====
 1. Publish the 3 tempus services as discussed above.
 2. Configure the services.
 3. Create a track with  services as shown below.
@@ -223,7 +218,7 @@ Usage
 
 
 License
--------
+=======
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at:

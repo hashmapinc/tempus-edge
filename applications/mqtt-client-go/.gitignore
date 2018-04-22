@@ -1,5 +1,5 @@
 # ignore the mqtt client executable
-mqtt-client?.?.?
+mqtt-client-go?.?.?
 
 # ignore sample configs
 config.pb

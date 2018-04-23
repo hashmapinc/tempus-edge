@@ -11,7 +11,7 @@ import (
 )
 
 /*
-InitIofogController starts a goroutine for handling new messages.
+InitIofogController starts a goroutine for handling new iofog messages.
 
 @param inbox - channel containing IoMessage pointers that need processed
 */

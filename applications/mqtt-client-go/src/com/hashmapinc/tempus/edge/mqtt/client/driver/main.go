@@ -18,6 +18,10 @@ var logger = log.New(os.Stderr, "", log.LstdFlags|log.LUTC|log.Lshortfile)
 func main() {
 	logger.Println("Starting edge application...")
 
+	// init the client's controllers
+	client.InitIofogController(iofog.Inbox)
+	client.InitMqttController(mqtt.Inbox)
+
 	// connect to local iofog agent
 	retriesLeft := 10
 	retryDelay := 10
@@ -33,19 +37,12 @@ func main() {
 	}
 	logger.Println("Successfully connected to iofog!")
 
-	// init the client's iofog controller
-	client.InitIofogController(iofog.Inbox)
-
-	// connect mqtt msg handler
-	mqtt.MsgHandler = client.OnMqttMessage
-
 	// start mqtt client
 	logger.Println("starting mqtt connection")
-	mqtt.Listen()
+	mqtt.Init(20, 20)
 
 	// perform initial updates
-	client.UpdateTrackConfig()
-	mqtt.UpdateClient(client.LocalTrackConfig)
+	client.UpdateTrackConfig() // this updates the track config and this edge application
 
 	// loop forever
 	logger.Println("listening for tasks...")

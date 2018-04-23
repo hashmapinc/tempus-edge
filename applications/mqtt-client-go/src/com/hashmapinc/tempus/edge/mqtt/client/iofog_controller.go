@@ -11,32 +11,24 @@ import (
 )
 
 /*
-ListenForIofogData starts a goroutine for monitoring the data channel and responding to new messages.
+InitIofogController starts a goroutine for handling new messages.
 
-@param dataChannel - channel containing IoMessage pointers that need processed
-@param receiptChannel - channel containing PostMessageResponses that are logged
+@param inbox - channel containing IoMessage pointers that need processed
 */
-func ListenForIofogData(dataChannel *<-chan *sdk.IoMessage, receiptChannel *<-chan *sdk.PostMessageResponse) {
+func InitIofogController(inbox <-chan *sdk.IoMessage) {
 	// listen for new messages
+	logger.Println("Listening for iofog messages...!")
 	go func() {
 		for {
-			msg := <-*dataChannel
+			msg := <-inbox
 			logger.Println("heard new iofog message:", msg.ID)
 			onIofogMessage(msg)
-		}
-	}()
-
-	// discard receipts
-	go func() {
-		for {
-			rcpt := <-*receiptChannel
-			logger.Println("Received message receipt:", rcpt.ID, rcpt.Timestamp)
 		}
 	}()
 }
 
 /*
-OnIofogMessage processes incoming iofog messages
+onIofogMessage processes incoming iofog messages
 
 @param msg - IoMessage pointer containing message to process
 @returns error - any error that occurs durring processing

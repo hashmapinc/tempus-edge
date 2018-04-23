@@ -22,7 +22,7 @@ func main() {
 	retriesLeft := 10
 	retryDelay := 10
 	logger.Println("starting iofog connection")
-	for err := iofog.StartConnection(); err != nil; {
+	for err := iofog.Init(20, 20); err != nil; {
 		retriesLeft--
 		if retriesLeft < 1 {
 			logger.Panicln("Could not connect to ioFog agent. Terminating edge application...")
@@ -30,14 +30,11 @@ func main() {
 		logger.Println("Could not connect to ioFog Agent. Received error: ", err.Error())
 		logger.Printf("Will retry ioFog connection in %d seconds. %d retries remaining...\n", retryDelay, retriesLeft)
 		time.Sleep(time.Duration(retryDelay) * time.Second)
-		err = iofog.StartConnection()
 	}
-	// connect msg handler to ws data channel
 	logger.Println("Successfully connected to iofog!")
 
-	// listen for iofog messages
-	logger.Println("Listening for iofog messages...!")
-	client.ListenForIofogData(&iofog.DataChannel, &iofog.ReceiptChannel)
+	// init the client's iofog controller
+	client.InitIofogController(iofog.Inbox)
 
 	// connect mqtt msg handler
 	mqtt.MsgHandler = client.OnMqttMessage

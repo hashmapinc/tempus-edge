@@ -15,19 +15,19 @@ import (
 	sdk "github.com/iofog/container-sdk-go"
 )
 
-var logger = log.New(os.Stderr, "", log.LstdFlags|log.LUTC|log.Lshortfile)
-
-// client holds the connection to the local ioFog agent
-var client = &sdk.IoFogClient{}
-
-// Inbox holds all incoming iofog messages
-var Inbox <-chan *sdk.IoMessage
-
-// Outbox holds all outgoing iofog messages
-var Outbox chan []byte
-
-// receiptChannel holds all incoming iofog messages
-var receiptChannel <-chan *sdk.PostMessageResponse
+var (
+	logger = log.New(os.Stderr, "", log.LstdFlags|log.LUTC|log.Lshortfile)
+	// client holds the connection to the local ioFog agent
+	client = &sdk.IoFogClient{}
+	// Inbox holds all incoming iofog messages
+	Inbox <-chan *sdk.IoMessage
+	// Outbox holds all outgoing iofog messages
+	Outbox chan []byte
+	// receiptChannel holds all iofog message receipts
+	receiptChannel <-chan *sdk.PostMessageResponse
+	// confChannel holds all iofog configuration signals
+	confChannel <-chan byte
+)
 
 /*
 Init does the following:
@@ -48,8 +48,16 @@ func Init(inboxSize, outboxSize int) error {
 	}
 
 	// create channels
-	Inbox, receiptChannel = client.EstablishMessageWsConnection(inboxSize, outboxSize)
+	confChannel = client.EstablishControlWsConnection(5)
+	Inbox, receiptChannel = client.EstablishMessageWsConnection(inboxSize, inboxSize)
 	Outbox = make(chan []byte, outboxSize)
+
+	// start confChannel drainer
+	go func() {
+		for {
+			_ = <-confChannel
+		}
+	}()
 
 	// start receiptChannel drainer
 	go func() {

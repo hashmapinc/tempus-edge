@@ -34,9 +34,12 @@ UpdateTrackConfig attempts to update LocalTrackConfig with the latest track conf
 It is also responsible for updating the entire edge application!
 */
 func UpdateTrackConfig() error {
+	logger.Println("Updating track configuration...")
 	err := loadTrackConfig(pathToTrackConfig, LocalTrackConfig)
 
 	if err != nil {
+		logger.Println("Succesfully updated track config. Updating edge application...")
+
 		// update this edge application
 		mqtt.ConfigInbox <- LocalTrackConfig.GetMqttConfig()
 	}

@@ -14,7 +14,7 @@ InitMqttController starts a goroutine for handling new mqtt messages.
 */
 func InitMqttController(inbox chan *pb.MqttMessage) {
 	// listen for new messages
-	logger.Println("Listening for mqtt messages...!")
+	logger.Println("Listening for mqtt messages...")
 	go func() {
 		for {
 			msg := <-inbox

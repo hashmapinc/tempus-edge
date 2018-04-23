@@ -17,7 +17,7 @@ InitIofogController starts a goroutine for handling new iofog messages.
 */
 func InitIofogController(inbox <-chan *sdk.IoMessage) {
 	// listen for new messages
-	logger.Println("Listening for iofog messages...!")
+	logger.Println("Listening for iofog messages...")
 	go func() {
 		for {
 			msg := <-inbox

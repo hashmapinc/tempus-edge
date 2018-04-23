@@ -42,6 +42,7 @@ func main() {
 	mqtt.Init(20, 20)
 
 	// perform initial updates
+	logger.Println("performing initial config loading...")
 	client.UpdateTrackConfig() // this updates the track config and this edge application
 
 	// loop forever

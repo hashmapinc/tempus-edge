@@ -1,6 +1,6 @@
 # Make parameters
 APP_NAME=mqtt-client-go
-VERSION=0.1.0
+VERSION=0.1.01
 EXECUTABLE=$(APP_NAME)$(VERSION)
 TARGET_PACKAGE=com/hashmapinc/tempus/edge/mqtt/client/driver
 MAIN_FILE=src/$(TARGET_PACKAGE)/main.go

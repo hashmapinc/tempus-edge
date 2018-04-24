@@ -10,13 +10,47 @@ import (
 	sdk "github.com/iofog/container-sdk-go"
 )
 
-// OnIofogMessage processes incoming iofog messages
-func OnIofogMessage(msg *sdk.IoMessage) error {
+/*
+InitIofogController starts a goroutine for handling new iofog messages.
+
+@param inbox - channel containing IoMessage pointers that need processed
+*/
+func InitIofogController(inbox <-chan *sdk.IoMessage) {
+	// listen for new messages
+	go func() {
+		logger.Println("Listening for iofog messages...")
+		for {
+			msg := <-inbox
+			logger.Println("heard new iofog message:", msg.ID)
+			err := onIofogMessage(msg)
+			if err != nil {
+				logger.Println("error handling message:", err.Error())
+			}
+		}
+	}()
+}
+
+/*
+onIofogMessage processes incoming iofog messages
+
+@param msg - IoMessage pointer containing message to process
+@returns error - any error that occurs durring processing
+*/
+func onIofogMessage(msg *sdk.IoMessage) error {
 	if msg == nil || msg.ContentData == nil || len(msg.ContentData) < 2 {
 		logger.Println("could not handle new iofog message:", msg)
 		return errors.New("received non-tempus-edge message")
 	}
 	payload := msg.ContentData
+
+	// check for raw json first
+	if payload[0] == '{' && payload[len(payload)-1] == '}' {
+		logger.Println("Received iofog data containing raw json. Publishing now...")
+		mqtt.PublishJSONString(payload)
+		return nil
+	}
+
+	// handle a tempus edge message
 	var ptclB = payload[0]
 	var typB = payload[1]
 	ptcl, typ, err := message.DecodeHeader(ptclB, typB)

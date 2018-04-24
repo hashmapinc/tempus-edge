@@ -9,6 +9,7 @@ import (
 	"com/hashmapinc/tempus/edge/mqtt/client"
 	"log"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -22,7 +23,7 @@ func main() {
 	retriesLeft := 10
 	retryDelay := 10
 	logger.Println("starting iofog connection")
-	for err := iofog.StartConnection(); err != nil; {
+	for err := iofog.Init(20, 20); err != nil; {
 		retriesLeft--
 		if retriesLeft < 1 {
 			logger.Panicln("Could not connect to ioFog agent. Terminating edge application...")
@@ -30,25 +31,24 @@ func main() {
 		logger.Println("Could not connect to ioFog Agent. Received error: ", err.Error())
 		logger.Printf("Will retry ioFog connection in %d seconds. %d retries remaining...\n", retryDelay, retriesLeft)
 		time.Sleep(time.Duration(retryDelay) * time.Second)
-		err = iofog.StartConnection()
 	}
-	// connect msg handler to ws data channel
 	logger.Println("Successfully connected to iofog!")
-	iofog.ConnectListener(client.OnIofogMessage, iofog.Client)
-
-	// connect mqtt msg handler
-	mqtt.MsgHandler = client.OnMqttMessage
 
 	// start mqtt client
 	logger.Println("starting mqtt connection")
-	mqtt.Listen()
+	mqtt.Init(100, 100)
+
+	// init the client's controllers
+	client.InitIofogController(iofog.Inbox)
+	client.InitMqttController(mqtt.Inbox)
 
 	// perform initial updates
-	client.UpdateTrackConfig()
-	mqtt.UpdateClient(client.LocalTrackConfig)
+	logger.Println("performing initial config loading...")
+	client.UpdateTrackConfig() // this updates the track config and this edge application
 
 	// loop forever
 	logger.Println("listening for tasks...")
 	for {
+		runtime.Gosched()
 	}
 }

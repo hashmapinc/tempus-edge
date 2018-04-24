@@ -4,34 +4,36 @@ import (
 	"com/hashmapinc/tempus/edge/iofog"
 	pb "com/hashmapinc/tempus/edge/proto"
 
-	paho "github.com/eclipse/paho.mqtt.golang"
 	"github.com/golang/protobuf/proto"
 )
 
-// OnMqttMessage handles new incoming mqtt messages
-func OnMqttMessage(mqttClient paho.Client, msg paho.Message) {
-	logger.Printf("received mqtt msg: %v \n", msg)
+/*
+InitMqttController starts a goroutine for handling new mqtt messages.
 
-	// get qos
-	var qos pb.MqttMessage_QoS
-	switch msg.Qos() {
-	case 0:
-		qos = pb.MqttMessage_ZERO
-	case 1:
-		qos = pb.MqttMessage_ONE
-	case 2:
-		qos = pb.MqttMessage_TWO
-	}
+@param inbox - channel containing MqttMessage pointers that need processing
+*/
+func InitMqttController(inbox chan *pb.MqttMessage) {
+	// listen for new messages
+	go func() {
+		logger.Println("Listening for mqtt messages...")
+		for {
+			msg := <-inbox
+			logger.Println("dispatching new mqtt message to processing...")
+			onMqttMessage(msg)
+		}
+	}()
+}
 
-	// create tempus edge MQTT msg
-	mqttMsg := &pb.MqttMessage{
-		Topic:   msg.Topic(),
-		Qos:     qos,
-		Payload: msg.Payload(),
-	}
+/*
+onMqttMessage handles new incoming mqtt messages
+
+@param msg - pointer to the MqttMessage to process
+*/
+func onMqttMessage(msg *pb.MqttMessage) {
+	logger.Println("processing new mqtt message...")
 
 	// get proto byte array
-	iofogPayload, err := proto.Marshal(mqttMsg)
+	iofogPayload, err := proto.Marshal(msg)
 	if err != nil {
 		logger.Println("recieved error when marshalling mqtt message: ", err.Error())
 		return
@@ -42,8 +44,5 @@ func OnMqttMessage(mqttClient paho.Client, msg paho.Message) {
 	iofogPayload = append(header, iofogPayload...)
 
 	// send payload
-	err = iofog.SendWSMessage(iofogPayload, iofog.Client)
-	if err != nil {
-		logger.Println("recieved error when sending iofog message: ", err.Error())
-	}
+	iofog.Outbox <- iofogPayload
 }

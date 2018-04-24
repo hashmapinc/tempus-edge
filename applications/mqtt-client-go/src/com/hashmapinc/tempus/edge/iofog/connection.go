@@ -25,8 +25,6 @@ var (
 	Outbox chan []byte
 	// receiptChannel holds all iofog message receipts
 	receiptChannel <-chan *sdk.PostMessageResponse
-	// confChannel holds all iofog configuration signals
-	confChannel <-chan byte
 )
 
 /*
@@ -39,6 +37,7 @@ Init does the following:
 @param outboxSize - size of the outbox channel buffer
 */
 func Init(inboxSize, outboxSize int) error {
+	logger.Println("initializing iofog connection...")
 	// create client
 	var err error
 	client, err = sdk.NewDefaultIoFogClient()
@@ -48,26 +47,21 @@ func Init(inboxSize, outboxSize int) error {
 	}
 
 	// create channels
-	confChannel = client.EstablishControlWsConnection(5)
 	Inbox, receiptChannel = client.EstablishMessageWsConnection(inboxSize, inboxSize)
 	Outbox = make(chan []byte, outboxSize)
 
-	// start confChannel drainer
-	go func() {
-		for {
-			_ = <-confChannel
-		}
-	}()
-
 	// start receiptChannel drainer
 	go func() {
+		logger.Println("starting receiptChannel drainer...")
 		for {
 			_ = <-receiptChannel
+			logger.Println("discarded receipt from iofog...")
 		}
 	}()
 
 	// start Outbox drainer
 	go func() {
+		logger.Println("starting Outbox drainer...")
 		for {
 			payload := <-Outbox
 			err = publish(payload)
@@ -78,6 +72,7 @@ func Init(inboxSize, outboxSize int) error {
 			}
 		}
 	}()
+
 	return nil
 }
 
@@ -87,6 +82,7 @@ publish sends an IoMessage to teh iofog message bus with ContentData = payload
 @param payload - bytes to use for the outgoing IoMessage's ContentData
 */
 func publish(payload []byte) (err error) {
+	logger.Println("publishing to iofog...")
 	// create msg
 	msg := &sdk.IoMessage{ContentData: payload}
 

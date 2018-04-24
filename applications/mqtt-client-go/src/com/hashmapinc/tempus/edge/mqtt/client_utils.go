@@ -68,7 +68,8 @@ func parseOptsFromConf(mqttConfig *proto.MqttConfig) (opts *paho.ClientOptions, 
 		SetUsername(mqttConfig.GetUser().GetUsername()).
 		SetPassword(mqttConfig.GetUser().GetPassword()).
 		AddBroker(fmt.Sprintf("tcp://%s:%d", mqttConfig.GetBroker().GetHost(), mqttConfig.GetBroker().GetPort())).
-		SetClientID("tempus::edge::mqtt")
+		SetClientID("tempus::edge::mqtt").
+		SetCleanSession(true)
 
 	logger.Println("parsed opts:", opts)
 	return
@@ -82,6 +83,7 @@ createClient creates a paho client from the given mqttConfig
 @returns newClient - paho Client created from the mqttConfig
 */
 func createClient(mqttConfig *proto.MqttConfig) (newClient paho.Client, err error) {
+	logger.Println("creating paho client...")
 	// get paho client options from mqtt config
 	opts, err := parseOptsFromConf(mqttConfig)
 	if err != nil {

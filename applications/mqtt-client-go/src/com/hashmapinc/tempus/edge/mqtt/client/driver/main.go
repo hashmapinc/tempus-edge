@@ -9,6 +9,7 @@ import (
 	"com/hashmapinc/tempus/edge/mqtt/client"
 	"log"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -17,10 +18,6 @@ var logger = log.New(os.Stderr, "", log.LstdFlags|log.LUTC|log.Lshortfile)
 
 func main() {
 	logger.Println("Starting edge application...")
-
-	// init the client's controllers
-	client.InitIofogController(iofog.Inbox)
-	client.InitMqttController(mqtt.Inbox)
 
 	// connect to local iofog agent
 	retriesLeft := 10
@@ -41,6 +38,10 @@ func main() {
 	logger.Println("starting mqtt connection")
 	mqtt.Init(20, 20)
 
+	// init the client's controllers
+	client.InitIofogController(iofog.Inbox)
+	client.InitMqttController(mqtt.Inbox)
+
 	// perform initial updates
 	logger.Println("performing initial config loading...")
 	client.UpdateTrackConfig() // this updates the track config and this edge application
@@ -48,5 +49,6 @@ func main() {
 	// loop forever
 	logger.Println("listening for tasks...")
 	for {
+		runtime.Gosched()
 	}
 }

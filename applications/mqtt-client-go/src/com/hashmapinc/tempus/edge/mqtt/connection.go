@@ -10,6 +10,7 @@ import (
 	"com/hashmapinc/tempus/edge/proto"
 	"log"
 	"os"
+	"runtime"
 	"sync"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
@@ -47,32 +48,44 @@ func Init(inboxSize, outboxSize int) {
 
 	// launch new config listener loop
 	go func() {
+		logger.Println("Starting mqtt config listener....")
 		for {
 			mqttConfig := <-ConfigInbox // block until new config is available
-			// launch handler for new config
-			go func() {
-				newClient, err := createClient(mqttConfig)
-				if err != nil {
-					logger.Println("error creating client:", err.Error())
-				} else {
-					logger.Println("successfully created new client!")
+			logger.Println("processing new mqtt config...")
+			newClient, err := createClient(mqttConfig)
+			if err != nil {
+				logger.Println("error creating client:", err.Error())
+			} else {
+				logger.Println("successfully created new client!")
 
-					// update client, give old client 1000ms to shut down
-					clientLock.Lock()
-					client.Disconnect(1000.0)
-					client = newClient
-					clientLock.Unlock()
+				// update client
+				clientLock.Lock()
+				if client.IsConnected() {
+					client.Disconnect(1000.0) // give the client a second to shut down
 				}
-			}()
+				client = newClient
+				clientLock.Unlock()
+			}
 		}
 	}()
 
 	// launch outbox listener loop
 	go func() {
+		logger.Println("Starting mqtt outbox listener....")
 		for {
 			outgoingMsg := <-Outbox // block until new msg is available
-			//launch msg sender
+			logger.Println("processing new outgoing mqtt message...")
+
+			// handle message
 			go func() {
+				// check that client is configured
+				currentOpts := client.OptionsReader()
+				for len(currentOpts.Servers()) < 1 {
+					logger.Println("client has no current servers! Delaying message processing until it has some...")
+					runtime.Gosched()
+				}
+
+				// publish message
 				err := publish(outgoingMsg)
 				if err != nil {
 					logger.Println("error publishing message:", err.Error())

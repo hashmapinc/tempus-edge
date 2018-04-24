@@ -20,8 +20,8 @@ import org.eclipse.milo.opcua.stack.core.types.structured.MonitoringParameters
 import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId
 
 import com.hashmapinc.tempus.edge.proto.{TrackConfig, OpcConfig, OpcMessage, MessageProtocols, DataMessageTypes}
+import com.hashmapinc.tempus.edge.iofog.IofogConnection
 import com.hashmapinc.tempus.edge.opcClient.Config
-import com.hashmapinc.tempus.edge.opcClient.iofog.IofogConnection
 
 /** 
  *  This object holds the logic for handling OPC events

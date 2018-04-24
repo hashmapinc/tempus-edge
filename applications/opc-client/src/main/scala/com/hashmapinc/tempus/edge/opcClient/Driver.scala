@@ -2,7 +2,7 @@ package com.hashmapinc.tempus.edge.opcClient
 
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.opcClient.iofog.IofogConnection
+import com.hashmapinc.tempus.edge.iofog.IofogConnection
 import com.hashmapinc.tempus.edge.opcClient.opc.{OpcConnection, OpcController}
 
 /**
@@ -28,7 +28,7 @@ object Driver {
     }
     
     log.info("Connecting to iofog...")
-    IofogConnection.connect
+    IofogConnection.connect(IofogController)
     log.info("iofog connection was successful. Listening...")
   }
 }

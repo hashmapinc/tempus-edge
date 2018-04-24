@@ -1,8 +1,8 @@
-package com.hashmapinc.tempus.edge.track.manager
+package com.hashmapinc.tempus.edge.trackManager
 
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.track.manager.iofog.{IofogConnection, IofogController}
+import com.hashmapinc.tempus.edge.iofog.IofogConnection
 
 /**
  * Driver for the overall edge application
@@ -16,11 +16,10 @@ object Driver {
     args: Array[String]
   ): Unit = {
     log.info("Starting edge application driver...")
+    log.info("CONTAINER_ID = " + IofogConnection.CONTAINER_ID)
     
-    IofogConnection.connect
+    log.info("Connecting to iofog...")
+    IofogConnection.connect(IofogController)
     log.info("iofog connection was successful. Listening...")
-
-    // request first configs
-    IofogConnection.requestConfigs
   }
 }

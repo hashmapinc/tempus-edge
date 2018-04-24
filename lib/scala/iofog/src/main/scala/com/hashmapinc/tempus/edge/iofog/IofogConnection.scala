@@ -26,6 +26,7 @@ object IofogConnection {
     log.info("Creating iofog listener...")
     val listener = new IofogListener(controller)    
 
+    // begin listening to iofog websockets
     log.info("Creating iofog connection...")
     try {
       client.openMessageWebSocket(listener)
@@ -37,6 +38,9 @@ object IofogConnection {
     } catch {
       case e: Exception => log.error("IoFog websocket error: " + e.toString)
     }
+
+    // request first configs
+    requestConfigs(listener)
   }
 
   /**

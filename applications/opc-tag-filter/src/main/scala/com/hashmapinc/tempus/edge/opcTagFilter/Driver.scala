@@ -17,7 +17,6 @@ object Driver {
     args: Array[String]
   ): Unit = {
     log.info("Starting edge application driver...")
-
     log.info("CONTAINER_ID = " + IofogConnection.CONTAINER_ID)
 
     Config.updateConfigs                  // load initial configs.

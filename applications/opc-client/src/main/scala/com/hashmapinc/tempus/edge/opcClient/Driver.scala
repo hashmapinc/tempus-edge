@@ -17,9 +17,7 @@ object Driver {
     args: Array[String]
   ): Unit = {
     log.info("Starting edge application driver...")
-
-    log.info("SELFNAME = " + System.getenv("SELFNAME"))
-    log.info("CONTAINERID = " + Config.CONTAINER_ID)
+    log.info("CONTAINER_ID = " + IofogConnection.CONTAINER_ID)
 
     Config.updateConfigs                  // load initial configs.
     if (Config.trackConfig.isDefined) {

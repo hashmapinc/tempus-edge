@@ -1,13 +1,10 @@
 # Make parameters
 APP_NAME=mqtt-client-go
-VERSION=0.1.01
+VERSION=0.1.02
 EXECUTABLE=$(APP_NAME)$(VERSION)
 TARGET_PACKAGE=com/hashmapinc/tempus/edge/mqtt/client/driver
 MAIN_FILE=src/$(TARGET_PACKAGE)/main.go
-TESTABLE_PACKAGES :=com/hashmapinc/tempus/edge/mqtt/client \
-									com/hashmapinc/tempus/edge/mqtt \
-									com/hashmapinc/tempus/edge/message \
-									com/hashmapinc/tempus/edge/iofog
+TESTABLE_PACKAGES :=com/hashmapinc/tempus/edge/mqtt/client
 TEST_HEADER="================================================================================="
 TEST_FOOTER="=================================================================================\n\n"
 
@@ -34,11 +31,12 @@ alpine_compile:
 
 # build the docker image
 docker: alpine_compile
-	docker build -t hashmapinc/tempus-edge-$(APP_NAME):$(VERSION) --build-arg EXECUTABLE=$(EXECUTABLE) .
+	docker build -t hashmapinc/tempus-edge-$(APP_NAME) --build-arg EXECUTABLE=$(EXECUTABLE) .
+	docker tag hashmapinc/tempus-edge-$(APP_NAME) hashmapinc/tempus-edge-$(APP_NAME):$(VERSION)
 
 # deploy the docker image
 deploy: test docker
-	docker push hashmapinc/tempus-edge-$(APP_NAME):$(VERSION)
+	docker push hashmapinc/tempus-edge-$(APP_NAME)
 
 # run the application locally
 run: local_compile

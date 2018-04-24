@@ -24,6 +24,7 @@
 # misc junk files
 **/.DS_Store
 **/*.pyc
+**/*.egg-info
 **/target
 **/bin
 **/.classpath

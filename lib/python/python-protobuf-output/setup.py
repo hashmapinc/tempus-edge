@@ -7,7 +7,7 @@ setup(
     author="Randy Pitcher",
     author_email="randy.pitcher@hashmapinc.com",
     description='Tempus Edge protobuf definitions compiled into a python package.',
-    long_description=open('../README.md').read(),
+    long_description='Tempus Edge protobuf definitions compiled into a python package.',
     keywords="hashmap hashmapinc tempus edge iot protobuf",
     url="https://github.com/hashmapinc/tempus-edge",
     install_requires=['protobuf'],

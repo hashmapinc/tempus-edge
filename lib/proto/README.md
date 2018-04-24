@@ -24,7 +24,7 @@ Build using:
 sh ./buildGOLANG.sh
 ```
 
-To make the compiled go files available to your edge applications, ensure that you add the go build output directory to your `$GOPATH`.
+To make the compiled go files available to your edge applications, ensure that you add `<full-path>/tempus-edge/lib/go` to your `$GOPATH`.
 
 ### PYTHON
 Build using:

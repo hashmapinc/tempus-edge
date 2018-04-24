@@ -2,9 +2,10 @@
 
 # Set dir variables
 CURR_DIR=`pwd`
+LIB_DIR=$CURR_DIR/..
 SRC_DIR=$CURR_DIR/src/main/protobuf
-DEST_DIR=$CURR_DIR/python-protobuf-output/tempus/edge/proto
-PACKAGE_DIR=$CURR_DIR/python-protobuf-output
+DEST_DIR=$LIB_DIR/python/python-protobuf-output/tempus/edge/proto
+PACKAGE_DIR=$LIB_DIR/python/python-protobuf-output
 
 # recreate output directory
 echo "recreating output directory..."

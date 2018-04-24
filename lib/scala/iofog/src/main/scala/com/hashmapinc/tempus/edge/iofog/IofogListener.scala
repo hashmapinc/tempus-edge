@@ -95,8 +95,7 @@ class IofogListener(controller: IofogController) extends IOFogAPIListener {
   def onNewConfig(
     json: javax.json.JsonObject
   ): Unit = {
-    log.warn("New config received! This container does not process configuration from iofog")
-    log.warn("Iofog config is: " + json)
+    controller.onNewConfig(json)
   }
 
   /**

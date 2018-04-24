@@ -62,7 +62,7 @@ object IofogController extends com.hashmapinc.tempus.edge.iofog.IofogController 
    *
    * @param messages - list of IOMessages from IofogListener
    */
-  def onMessages(
+  override def onMessages(
     messages: java.util.List[IOMessage]
   ): Unit = {
     // dispatch messages based on message types

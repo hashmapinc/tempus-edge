@@ -43,7 +43,7 @@ func UpdateTrackConfig() (err error) {
 
 	// update this edge application
 	logger.Println("Succesfully updated track config. Updating edge application...")
-	mqtt.ConfigInbox <- LocalTrackConfig.GetMqttConfig()
+	err = mqtt.Update(LocalTrackConfig.GetMqttConfig())
 	return
 }
 

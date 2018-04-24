@@ -17,12 +17,15 @@ InitIofogController starts a goroutine for handling new iofog messages.
 */
 func InitIofogController(inbox <-chan *sdk.IoMessage) {
 	// listen for new messages
-	logger.Println("Listening for iofog messages...")
 	go func() {
+		logger.Println("Listening for iofog messages...")
 		for {
 			msg := <-inbox
 			logger.Println("heard new iofog message:", msg.ID)
-			onIofogMessage(msg)
+			err := onIofogMessage(msg)
+			if err != nil {
+				logger.Println("error handling message:", err.Error())
+			}
 		}
 	}()
 }

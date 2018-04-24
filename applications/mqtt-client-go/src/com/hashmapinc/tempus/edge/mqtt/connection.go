@@ -20,11 +20,8 @@ import (
 var logger = log.New(os.Stderr, "", log.LstdFlags|log.LUTC|log.Lshortfile)
 
 // client holds pointer to current active paho Client
-var client = paho.NewClient(paho.NewClientOptions())
+var client = paho.NewClient(&paho.ClientOptions{})
 var clientLock = &sync.Mutex{}
-
-// ConfigInbox holds updated mqtt configs from the shared volume
-var ConfigInbox = make(chan *proto.MqttConfig, 10)
 
 // Inbox holds incoming mqtt messages from the broker
 var Inbox chan *proto.MqttMessage
@@ -35,7 +32,6 @@ var Outbox chan *proto.MqttMessage
 /*
 Init does the following:
 - creates Inbox and Outbox channels
-- starts a go routine for handling new mqtt configs
 - starts a go routine for draining the Outbox
 
 @param inboxSize 	- int size of the Inbox channel
@@ -45,29 +41,6 @@ func Init(inboxSize, outboxSize int) {
 	// create channels
 	Inbox = make(chan *proto.MqttMessage, inboxSize)
 	Outbox = make(chan *proto.MqttMessage, outboxSize)
-
-	// launch new config listener loop
-	go func() {
-		logger.Println("Starting mqtt config listener....")
-		for {
-			mqttConfig := <-ConfigInbox // block until new config is available
-			logger.Println("processing new mqtt config...")
-			newClient, err := createClient(mqttConfig)
-			if err != nil {
-				logger.Println("error creating client:", err.Error())
-			} else {
-				logger.Println("successfully created new client!")
-
-				// update client
-				clientLock.Lock()
-				if client.IsConnected() {
-					client.Disconnect(1000.0) // give the client a second to shut down
-				}
-				client = newClient
-				clientLock.Unlock()
-			}
-		}
-	}()
 
 	// launch outbox listener loop
 	go func() {

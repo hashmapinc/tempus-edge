@@ -36,7 +36,7 @@ func main() {
 
 	// start mqtt client
 	logger.Println("starting mqtt connection")
-	mqtt.Init(20, 20)
+	mqtt.Init(100, 100)
 
 	// init the client's controllers
 	client.InitIofogController(iofog.Inbox)

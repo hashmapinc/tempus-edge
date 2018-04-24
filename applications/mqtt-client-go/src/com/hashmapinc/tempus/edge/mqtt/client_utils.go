@@ -4,9 +4,36 @@ import (
 	"com/hashmapinc/tempus/edge/proto"
 	"errors"
 	"fmt"
+	"time"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
 )
+
+/*
+Update does the following:
+- converts the given mqttConfig into a paho mqtt client options struct
+- closes the current client connection
+- starts a new client connection with the new client options
+
+@param mqttConfig - MqttConfig proto struct containing mqtt client configs
+*/
+func Update(mqttConfig *proto.MqttConfig) error {
+	logger.Println("processing new mqtt config...")
+	newClient, err := createClient(mqttConfig)
+	if err != nil {
+		return err
+	}
+	logger.Println("successfully created new mqtt client!")
+
+	// update client
+	clientLock.Lock()
+	logger.Println("updating mqtt client...")
+	client = newClient
+	clientLock.Unlock()
+
+	logger.Println("successfully updated mqtt client!")
+	return nil
+}
 
 /*
 onMessage parses the incoming msg and sends the parsed MqttMessage to the Inbox for processing.
@@ -68,10 +95,13 @@ func parseOptsFromConf(mqttConfig *proto.MqttConfig) (opts *paho.ClientOptions, 
 		SetUsername(mqttConfig.GetUser().GetUsername()).
 		SetPassword(mqttConfig.GetUser().GetPassword()).
 		AddBroker(fmt.Sprintf("tcp://%s:%d", mqttConfig.GetBroker().GetHost(), mqttConfig.GetBroker().GetPort())).
-		SetClientID("tempus::edge::mqtt").
-		SetCleanSession(true)
+		SetClientID("tempus::edge::golang-mqtt-client").
+		SetCleanSession(false).
+		SetConnectTimeout(5 * time.Second).
+		SetAutoReconnect(true).
+		SetMessageChannelDepth(100)
 
-	logger.Println("parsed opts:", opts)
+	logger.Printf("parsed opts:\n%v\n", opts)
 	return
 }
 

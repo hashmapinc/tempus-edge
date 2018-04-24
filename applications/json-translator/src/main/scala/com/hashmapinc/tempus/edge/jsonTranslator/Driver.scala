@@ -2,7 +2,7 @@ package com.hashmapinc.tempus.edge.jsonTranslator
 
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.jsonTranslator.iofog.{IofogConnection, IofogController}
+import com.hashmapinc.tempus.edge.iofog.IofogConnection
 
 /**
  * Driver for the overall edge application
@@ -17,7 +17,7 @@ object Driver {
   ): Unit = {
     log.info("Starting edge application driver...")
     
-    IofogConnection.connect
+    IofogConnection.connect(IofogController)
     log.info("iofog connection was successful. Listening...")
   }
 }

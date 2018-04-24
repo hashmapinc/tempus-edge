@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.hashmapinc.tempus.edge</groupId>
   <artifactId>json-translator</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <name>${project.artifactId}</name>
   <description>Tempus Edge application for translating back and forth between JSON and Tempus Edge messaging serializations.</description>
   <inceptionYear>2018</inceptionYear>
@@ -39,6 +39,11 @@
     <dependency>
       <groupId>com.hashmapinc.tempus.edge</groupId>
       <artifactId>protos</artifactId>
+      <version>0.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.hashmapinc.tempus.edge</groupId>
+      <artifactId>iofog</artifactId>
       <version>0.1.0</version>
     </dependency>
     <dependency>

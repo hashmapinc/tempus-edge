@@ -45,15 +45,22 @@ PublishJSONDataMessage converts msg into an MqttMessage and pushes it to the out
 
 @param msg - pointer to the JsonDataMessage to parse and send to the broker
 */
-func PublishJSONDataMessage(msg *proto.JsonDataMessage) (err error) {
+func PublishJSONDataMessage(msg *proto.JsonDataMessage) error {
+	// try to deserialize the json into an MqttMessage proto struct
 	jsonString := msg.GetJson()
 	mqttMsg := &proto.MqttMessage{}
-	err = jsonpb.UnmarshalString(jsonString, mqttMsg)
+	err := jsonpb.UnmarshalString(jsonString, mqttMsg)
+
+	// if deserialization worked, push the msg to the outbox
 	if err == nil {
 		// push mqttMsg to outbox
 		Outbox <- mqttMsg
+	} else {
+		// deserialization failed. Just push the json as a normal json string
+		PublishJSONString([]byte(jsonString))
 	}
-	return
+
+	return nil
 }
 
 /*

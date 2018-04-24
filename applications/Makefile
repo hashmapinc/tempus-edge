@@ -13,64 +13,72 @@ DOCKER_REPO=hashmapinc
 
 all: build 
 
-
-print-spacer:
-	echo "\n\n\n\n\n"
-
 build:build-json-translator build-mqtt-client-go build-mqtt-client-python build-opc-client build-opc-tag-filter build-timeseries-generator build-track-manager
 
-
-build-json-translator: print-spacer
+build-json-translator: 
+	echo "\n\n\n\n\n"
 	cd $(JSON_TRANSLATOR) && \
 	mvn clean package -q
 
-build-mqtt-client-go: print-spacer
+build-mqtt-client-go: 
+	echo "\n\n\n\n\n"
 	cd $(MQTT_CLIENT_GO) && \
 	make clean docker
 
-build-mqtt-client-python: print-spacer
+build-mqtt-client-python: 
+	echo "\n\n\n\n\n"
 	cd $(MQTT_CLIENT_PYTHON) && \
 	make build
 
-build-opc-client: print-spacer
+build-opc-client: 
+	echo "\n\n\n\n\n"
 	cd $(OPC_CLIENT) && \
 	mvn clean package -q
 
-build-opc-tag-filter: print-spacer
+build-opc-tag-filter: 
+	echo "\n\n\n\n\n"
 	cd $(OPC_TAG_FILTER) && \
 	mvn clean package -q
 
-build-timeseries-generator: print-spacer
+build-timeseries-generator: 
+	echo "\n\n\n\n\n"
 	cd $(TIMESERIES_GENERATOR) && \
 	echo "timeseries-generator building is trash and is not automated. See github issues if you want to fix this."
 
-build-track-manager: print-spacer
+build-track-manager: 
+	echo "\n\n\n\n\n"
 	cd $(TRACK_MANAGER) && \
 	mvn clean package -q
 
 
 deploy:deploy-json-translator deploy-mqtt-client-go deploy-mqtt-client-python deploy-opc-client deploy-opc-tag-filter deploy-timeseries-generator deploy-track-manager
 
-
-deploy-json-translator: print-spacer
+deploy-json-translator: 
+	echo "\n\n\n\n\n"
 	docker push $(DOCKER_REPO)/tempus-edge-json-translator
 
-deploy-mqtt-client-go: print-spacer
+deploy-mqtt-client-go: 
+	echo "\n\n\n\n\n"
 	cd $(MQTT_CLIENT_GO) && \
 	make deploy
 
-deploy-mqtt-client-python: print-spacer
+deploy-mqtt-client-python: 
+	echo "\n\n\n\n\n"
 	cd $(MQTT_CLIENT_PYTHON) && \
 	make deploy
 
-deploy-opc-client: print-spacer
+deploy-opc-client: 
+	echo "\n\n\n\n\n"
 	docker push $(DOCKER_REPO)/tempus-edge-opc-client
 
-deploy-opc-tag-filter: print-spacer
+deploy-opc-tag-filter: 
+	echo "\n\n\n\n\n"
 	docker push $(DOCKER_REPO)/tempus-edge-opc-tag-filter
 
-deploy-timeseries-generator: print-spacer
+deploy-timeseries-generator: 
+	echo "\n\n\n\n\n"
 	echo "timeseries-generator deployment is trash and is not automated. See github issues if you want to fix this."
 
-deploy-track-manager: print-spacer
+deploy-track-manager: 
+	echo "\n\n\n\n\n"
 	docker push $(DOCKER_REPO)/tempus-edge-track-manager

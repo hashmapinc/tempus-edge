@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.jsonTranslator.iofog
+package com.hashmapinc.tempus.edge.jsonTranslator
 
 import java.io.StringReader
 import javax.json.Json

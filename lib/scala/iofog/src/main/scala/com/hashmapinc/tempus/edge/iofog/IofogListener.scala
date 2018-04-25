@@ -1,17 +1,15 @@
-package com.hashmapinc.tempus.edge.track.manager.iofog
-
-import javax.json.JsonObject
+package com.hashmapinc.tempus.edge.iofog
 
 import com.iotracks.api.listener.IOFogAPIListener
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes, TrackConfig}
-
 /**
- * This object dispatches IoFog events to the IofogController
+ * This class holds the async logic for handling iofog events
+ *
+ * @param controller - the IofogController instance with event handling logic
  */
-object IofogListener extends IOFogAPIListener {
+class IofogListener(controller: IofogController) extends IOFogAPIListener {
   private val log = Logger(getClass())
 
   /**
@@ -26,14 +24,14 @@ object IofogListener extends IOFogAPIListener {
     log.info("Received " + messages.size.toString + " message(s)")
     try {
       // send messages to IofogController for dispatch
-      IofogController.onMessages(messages)
+      controller.onMessages(messages)
     } catch {
       case e: Exception => log.error("Error handling iofog messages: " + e)
     }
   }
 
   /**
-   * Method is triggered when container receives messages from query request.
+   * Method is triggered when Container receives messages from Query request.
    *
    * @param timeframestart - time-frame start date of returned messages
    * @param timeframeend - time-frame end date of returned messages
@@ -46,7 +44,7 @@ object IofogListener extends IOFogAPIListener {
     messages: java.util.List[IOMessage]
   ): Unit = {
     log.info("Received " + messages.size.toString + " message(s) from query request")
-    // do nothing
+    // do nothing with messages for now (this may change later)
   }
 
   /**
@@ -59,7 +57,6 @@ object IofogListener extends IOFogAPIListener {
     throwable: Throwable
   ): Unit = {
     log.error(throwable.toString)
-    // do nothing
   }
 
   /**
@@ -72,7 +69,6 @@ object IofogListener extends IOFogAPIListener {
     error: String
   ): Unit = {
     log.error("Bad ioFog Request: " + error)
-    // do nothing
   }
 
   /**
@@ -88,7 +84,6 @@ object IofogListener extends IOFogAPIListener {
     timestamp: Long
   ): Unit = {
     log.info("Received message receipt for " + messageId)
-    // do nothing
   }
 
   /**
@@ -98,30 +93,17 @@ object IofogListener extends IOFogAPIListener {
    */
   @Override
   def onNewConfig(
-    json: JsonObject
+    json: javax.json.JsonObject
   ): Unit = {
-    log.info("Received new config from iofog:" + json.toString)
-
-    // merge new config with existing config, save configs, notify track of new config
-    try {
-      IofogController.onNewIofogConfig(json)
-    } catch {
-      case e: Exception => log.error("Error while processing new ioFog config: " + e)
-    }
+    controller.onNewConfig(json)
   }
 
   /**
-   * This function handles new config signals.
+   * This function handles new config signals
    */
   @Override
   def onNewConfigSignal: Unit = {
     log.info("Received new config signal")
-
-    // send new configs to the onNewConfig handler above
-    try {
-      IofogConnection.requestConfigs
-    } catch {
-      case e: Exception => log.error("Error while handling new ioFog config signal: " + e)
-    }
+    IofogConnection.requestConfigs(this)
   }
 }

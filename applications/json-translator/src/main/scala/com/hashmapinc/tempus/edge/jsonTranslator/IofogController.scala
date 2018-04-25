@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.jsonTranslator.iofog
+package com.hashmapinc.tempus.edge.jsonTranslator
 
 import collection.JavaConverters._
 import scala.util.Try
@@ -8,12 +8,13 @@ import com.typesafe.scalalogging.Logger
 import scalapb.json4s.JsonFormat
 
 import com.hashmapinc.tempus.edge.proto._
+import com.hashmapinc.tempus.edge.iofog.IofogConnection
 
 /**
  * This object holds the logic for handling iofog events
  */
-object IofogController {
-  private val log = Logger(getClass())
+object IofogController extends com.hashmapinc.tempus.edge.iofog.IofogController {
+  val log = Logger(getClass())
 
   /**
    * This function converts a json object into a protobuf object Option

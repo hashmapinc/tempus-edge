@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.track.manager.iofog
+package com.hashmapinc.tempus.edge.trackManager
 
 import java.nio.file.{Paths, Files}
 import javax.json.Json
@@ -23,10 +23,10 @@ class IofogControllerTest extends FlatSpec {
   it should "save and load an empty TrackConfig with no existing pb file on disk" in {
     // write empty config
     val trackConfig_original = TrackConfig()
-    IofogController.saveTrackConfig(trackConfig_original, TEST_CONFIG_PATH)
+    Config.saveTrackConfig(trackConfig_original, TEST_CONFIG_PATH)
 
     // read saved config
-    val trackConfig_loaded = IofogController.loadTrackConfig(TEST_CONFIG_PATH)
+    val trackConfig_loaded = Config.loadTrackConfig(TEST_CONFIG_PATH)
 
     // ensure they are the same
     assert(trackConfig_original == trackConfig_loaded)
@@ -40,10 +40,10 @@ class IofogControllerTest extends FlatSpec {
     val newTrackConfig = TrackConfig().withTrackMetadata(trackMeta)
 
     // overwrite the file on disk
-    IofogController.saveTrackConfig(newTrackConfig, TEST_CONFIG_PATH)
+    Config.saveTrackConfig(newTrackConfig, TEST_CONFIG_PATH)
 
     // load config and check that it is the same as the config saved
-    val loadedTrackConfig = IofogController.loadTrackConfig(TEST_CONFIG_PATH)
+    val loadedTrackConfig = Config.loadTrackConfig(TEST_CONFIG_PATH)
     assert(newTrackConfig == loadedTrackConfig)
   }
   it should "return an empty track config when reading a malformed config file" in {
@@ -52,7 +52,7 @@ class IofogControllerTest extends FlatSpec {
     Files.write(Paths.get(TEST_CONFIG_PATH), garbage)
 
     // try to load config. Check that the config returned is empty
-    val loadedTrackConfig = IofogController.loadTrackConfig(TEST_CONFIG_PATH)
+    val loadedTrackConfig = Config.loadTrackConfig(TEST_CONFIG_PATH)
     assert(TrackConfig() == loadedTrackConfig)
   }
   it should "clean up test config files after testing is done" in {
@@ -75,43 +75,43 @@ class IofogControllerTest extends FlatSpec {
   val opcConfig_B = Option(OpcConfig("ENDPOINT B", OpcConfig.SecurityType.NONE))
 
   "mergeConfigs" should "return an empty track config if no new configs are provided" in {
-    assert(TrackConfig() == IofogController.mergeConfigs(TrackConfig())(None,None,None,None))
+    assert(TrackConfig() == Config.mergeConfigs(TrackConfig())(None,None,None,None))
   }
   it should "not change a track config if no new configs are provided to merge with" in {
     val oldConfig = TrackConfig(trackMeta_A, mqttConfig_A, opcConfig_A)
-    assert(oldConfig == IofogController.mergeConfigs(oldConfig)(None,None,None,None))
+    assert(oldConfig == Config.mergeConfigs(oldConfig)(None,None,None,None))
   }
   it should "completely replace an old config if a new track config is provided" in {
     val oldConfig = TrackConfig(trackMeta_A, mqttConfig_A, opcConfig_A)
     val newConfig = TrackConfig(trackMeta_B, mqttConfig_B, opcConfig_B)
-    assert(newConfig == IofogController.mergeConfigs(oldConfig)(Option(newConfig),None,None,None))
-    assert(newConfig == IofogController.mergeConfigs(oldConfig)(Option(newConfig),trackMeta_A,None,None))
-    assert(newConfig == IofogController.mergeConfigs(oldConfig)(Option(newConfig),None,mqttConfig_A,None))
-    assert(newConfig == IofogController.mergeConfigs(oldConfig)(Option(newConfig),None,None,opcConfig_A))
-    assert(newConfig == IofogController.mergeConfigs(oldConfig)(Option(newConfig),trackMeta_A,mqttConfig_A,None))
-    assert(newConfig == IofogController.mergeConfigs(oldConfig)(Option(newConfig),trackMeta_A,None,opcConfig_A))
-    assert(newConfig == IofogController.mergeConfigs(oldConfig)(Option(newConfig),None,mqttConfig_A,opcConfig_A))
+    assert(newConfig == Config.mergeConfigs(oldConfig)(Option(newConfig),None,None,None))
+    assert(newConfig == Config.mergeConfigs(oldConfig)(Option(newConfig),trackMeta_A,None,None))
+    assert(newConfig == Config.mergeConfigs(oldConfig)(Option(newConfig),None,mqttConfig_A,None))
+    assert(newConfig == Config.mergeConfigs(oldConfig)(Option(newConfig),None,None,opcConfig_A))
+    assert(newConfig == Config.mergeConfigs(oldConfig)(Option(newConfig),trackMeta_A,mqttConfig_A,None))
+    assert(newConfig == Config.mergeConfigs(oldConfig)(Option(newConfig),trackMeta_A,None,opcConfig_A))
+    assert(newConfig == Config.mergeConfigs(oldConfig)(Option(newConfig),None,mqttConfig_A,opcConfig_A))
   }
   it should "update with new track metadata if track metadata is provided" in {
     val oldConfig = TrackConfig(trackMeta_A, mqttConfig_A, opcConfig_A)
-    assert(trackMeta_B.get == IofogController.mergeConfigs(oldConfig)(None,trackMeta_B,None,None).getTrackMetadata)
-    assert(trackMeta_B.get == IofogController.mergeConfigs(oldConfig)(None,trackMeta_B,mqttConfig_B,None).getTrackMetadata)
-    assert(trackMeta_B.get == IofogController.mergeConfigs(oldConfig)(None,trackMeta_B,None,opcConfig_B).getTrackMetadata)
-    assert(trackMeta_B.get == IofogController.mergeConfigs(oldConfig)(None,trackMeta_B,mqttConfig_B,opcConfig_B).getTrackMetadata)
+    assert(trackMeta_B.get == Config.mergeConfigs(oldConfig)(None,trackMeta_B,None,None).getTrackMetadata)
+    assert(trackMeta_B.get == Config.mergeConfigs(oldConfig)(None,trackMeta_B,mqttConfig_B,None).getTrackMetadata)
+    assert(trackMeta_B.get == Config.mergeConfigs(oldConfig)(None,trackMeta_B,None,opcConfig_B).getTrackMetadata)
+    assert(trackMeta_B.get == Config.mergeConfigs(oldConfig)(None,trackMeta_B,mqttConfig_B,opcConfig_B).getTrackMetadata)
   }
   it should "update with new mqtt config if mqtt config is provided" in {
     val oldConfig = TrackConfig(trackMeta_A, mqttConfig_A, opcConfig_A)
-    assert(mqttConfig_B.get == IofogController.mergeConfigs(oldConfig)(None,None,mqttConfig_B,None).getMqttConfig)
-    assert(mqttConfig_B.get == IofogController.mergeConfigs(oldConfig)(None,trackMeta_B,mqttConfig_B,None).getMqttConfig)
-    assert(mqttConfig_B.get == IofogController.mergeConfigs(oldConfig)(None,None,mqttConfig_B,opcConfig_B).getMqttConfig)
-    assert(mqttConfig_B.get == IofogController.mergeConfigs(oldConfig)(None,trackMeta_B,mqttConfig_B,opcConfig_B).getMqttConfig)
+    assert(mqttConfig_B.get == Config.mergeConfigs(oldConfig)(None,None,mqttConfig_B,None).getMqttConfig)
+    assert(mqttConfig_B.get == Config.mergeConfigs(oldConfig)(None,trackMeta_B,mqttConfig_B,None).getMqttConfig)
+    assert(mqttConfig_B.get == Config.mergeConfigs(oldConfig)(None,None,mqttConfig_B,opcConfig_B).getMqttConfig)
+    assert(mqttConfig_B.get == Config.mergeConfigs(oldConfig)(None,trackMeta_B,mqttConfig_B,opcConfig_B).getMqttConfig)
   }
   it should "update with new opc config if opc config is provided" in {
     val oldConfig = TrackConfig(trackMeta_A, mqttConfig_A, opcConfig_A)
-    assert(opcConfig_B.get == IofogController.mergeConfigs(oldConfig)(None,None,None,opcConfig_B).getOpcConfig)
-    assert(opcConfig_B.get == IofogController.mergeConfigs(oldConfig)(None,trackMeta_B,None,opcConfig_B).getOpcConfig)
-    assert(opcConfig_B.get == IofogController.mergeConfigs(oldConfig)(None,None,mqttConfig_B,opcConfig_B).getOpcConfig)
-    assert(opcConfig_B.get == IofogController.mergeConfigs(oldConfig)(None,trackMeta_B,mqttConfig_B,opcConfig_B).getOpcConfig)
+    assert(opcConfig_B.get == Config.mergeConfigs(oldConfig)(None,None,None,opcConfig_B).getOpcConfig)
+    assert(opcConfig_B.get == Config.mergeConfigs(oldConfig)(None,trackMeta_B,None,opcConfig_B).getOpcConfig)
+    assert(opcConfig_B.get == Config.mergeConfigs(oldConfig)(None,None,mqttConfig_B,opcConfig_B).getOpcConfig)
+    assert(opcConfig_B.get == Config.mergeConfigs(oldConfig)(None,trackMeta_B,mqttConfig_B,opcConfig_B).getOpcConfig)
   }
   //===========================================================================
 
@@ -138,59 +138,59 @@ class IofogControllerTest extends FlatSpec {
   val EMPTY_OPC_CONFIG      = OpcConfig()
 
   "JSON config parsing" should "properly parse a complete track config" in {
-    val parsedConfig = IofogController.mergeConfigs(TrackConfig()) _ tupled IofogController.parseJsonConfig(jsonConfig_A)
+    val parsedConfig = Config.mergeConfigs(TrackConfig()) _ tupled Parsers.parseJsonConfig(jsonConfig_A)
     val correctConfig = JsonFormat.fromJsonString[TrackConfig](jsonConfig_A.toString)
 
     assert(parsedConfig == correctConfig)
   }
   it should "properly parse valid partial configs" in {
-    val parsedConfig_B = IofogController.mergeConfigs(TrackConfig()) _ tupled IofogController.parseJsonConfig(jsonConfig_B)
+    val parsedConfig_B = Config.mergeConfigs(TrackConfig()) _ tupled Parsers.parseJsonConfig(jsonConfig_B)
     assert(parsedConfig_B.getTrackMetadata  != EMPTY_TRACK_METADATA)
     assert(parsedConfig_B.getMqttConfig     == EMPTY_MQTT_CONFIG)
     assert(parsedConfig_B.getOpcConfig      == EMPTY_OPC_CONFIG)
-    val parsedConfig_C = IofogController.mergeConfigs(TrackConfig()) _ tupled IofogController.parseJsonConfig(jsonConfig_C)
+    val parsedConfig_C = Config.mergeConfigs(TrackConfig()) _ tupled Parsers.parseJsonConfig(jsonConfig_C)
     assert(parsedConfig_C.getTrackMetadata  == EMPTY_TRACK_METADATA)
     assert(parsedConfig_C.getMqttConfig     != EMPTY_MQTT_CONFIG)
     assert(parsedConfig_C.getOpcConfig      == EMPTY_OPC_CONFIG)
-    val parsedConfig_D = IofogController.mergeConfigs(TrackConfig()) _ tupled IofogController.parseJsonConfig(jsonConfig_D)
+    val parsedConfig_D = Config.mergeConfigs(TrackConfig()) _ tupled Parsers.parseJsonConfig(jsonConfig_D)
     assert(parsedConfig_D.getTrackMetadata  == EMPTY_TRACK_METADATA)
     assert(parsedConfig_D.getMqttConfig     == EMPTY_MQTT_CONFIG)
     assert(parsedConfig_D.getOpcConfig      != EMPTY_OPC_CONFIG)
-    val parsedConfig_E = IofogController.mergeConfigs(TrackConfig()) _ tupled IofogController.parseJsonConfig(jsonConfig_E)
+    val parsedConfig_E = Config.mergeConfigs(TrackConfig()) _ tupled Parsers.parseJsonConfig(jsonConfig_E)
     assert(parsedConfig_E.getTrackMetadata  != EMPTY_TRACK_METADATA)
     assert(parsedConfig_E.getMqttConfig     != EMPTY_MQTT_CONFIG)
     assert(parsedConfig_E.getOpcConfig      == EMPTY_OPC_CONFIG)
-    val parsedConfig_F = IofogController.mergeConfigs(TrackConfig()) _ tupled IofogController.parseJsonConfig(jsonConfig_F)
+    val parsedConfig_F = Config.mergeConfigs(TrackConfig()) _ tupled Parsers.parseJsonConfig(jsonConfig_F)
     assert(parsedConfig_F.getTrackMetadata  != EMPTY_TRACK_METADATA)
     assert(parsedConfig_F.getMqttConfig     == EMPTY_MQTT_CONFIG)
     assert(parsedConfig_F.getOpcConfig      != EMPTY_OPC_CONFIG)
-    val parsedConfig_G = IofogController.mergeConfigs(TrackConfig()) _ tupled IofogController.parseJsonConfig(jsonConfig_G)
+    val parsedConfig_G = Config.mergeConfigs(TrackConfig()) _ tupled Parsers.parseJsonConfig(jsonConfig_G)
     assert(parsedConfig_G.getTrackMetadata  == EMPTY_TRACK_METADATA)
     assert(parsedConfig_G.getMqttConfig     != EMPTY_MQTT_CONFIG)
     assert(parsedConfig_G.getOpcConfig      != EMPTY_OPC_CONFIG)
   }
   it should "gracefully ignore empty json" in {
     val emptyConfig = TrackConfig()
-    val parsedConfig_H_empty = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseJsonConfig(jsonConfig_H)
+    val parsedConfig_H_empty = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseJsonConfig(jsonConfig_H)
     assert(parsedConfig_H_empty == emptyConfig)
 
-    val fullConfig = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseJsonConfig(jsonConfig_A)
-    val parsedConfig_H_full = IofogController.mergeConfigs(fullConfig) _ tupled IofogController.parseJsonConfig(jsonConfig_H)
+    val fullConfig = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseJsonConfig(jsonConfig_A)
+    val parsedConfig_H_full = Config.mergeConfigs(fullConfig) _ tupled Parsers.parseJsonConfig(jsonConfig_H)
     assert(parsedConfig_H_full == fullConfig)
   }
   it should "gracefully ignore extra fields in otherwise valid json" in {
     val emptyConfig = TrackConfig()
-    val properConfig = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseJsonConfig(jsonConfig_A)
-    val parsedConfig_I = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseJsonConfig(jsonConfig_I)
+    val properConfig = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseJsonConfig(jsonConfig_A)
+    val parsedConfig_I = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseJsonConfig(jsonConfig_I)
     assert(parsedConfig_I == properConfig)
   }
   it should "gracefully ignore garbage json" in {
     val emptyConfig = TrackConfig()
-    val parsedConfig_garbage_empty = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseJsonConfig(garbageConfig)
+    val parsedConfig_garbage_empty = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseJsonConfig(garbageConfig)
     assert(parsedConfig_garbage_empty == emptyConfig)
 
-    val fullConfig = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseJsonConfig(jsonConfig_A)
-    val parsedConfig_garbage_full = IofogController.mergeConfigs(fullConfig) _ tupled IofogController.parseJsonConfig(garbageConfig)
+    val fullConfig = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseJsonConfig(jsonConfig_A)
+    val parsedConfig_garbage_full = Config.mergeConfigs(fullConfig) _ tupled Parsers.parseJsonConfig(garbageConfig)
     assert(parsedConfig_garbage_full == fullConfig)
   }
   //===========================================================================
@@ -216,11 +216,11 @@ class IofogControllerTest extends FlatSpec {
 
   "parseConfigMessageContent" should "properly parse protobufs from valid tempus edge message content" in {
     val emptyConfig = TrackConfig()
-    val parsed_trackConfig = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(trackConfig_msgContent)
-    val parsed_trackMetadata = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(trackMetadata_msgContent)
-    val parsed_mqttConfig = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(mqttConfig_msgContent)
-    val parsed_opcConfig = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(opcConfig_msgContent)
-    val parsed_opcSubscriptions = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(opcSubscriptions_msgContent)
+    val parsed_trackConfig = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseConfigMessageContent(trackConfig_msgContent)
+    val parsed_trackMetadata = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseConfigMessageContent(trackMetadata_msgContent)
+    val parsed_mqttConfig = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseConfigMessageContent(mqttConfig_msgContent)
+    val parsed_opcConfig = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseConfigMessageContent(opcConfig_msgContent)
+    val parsed_opcSubscriptions = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseConfigMessageContent(opcSubscriptions_msgContent)
 
     assert(trackConfig_pb == parsed_trackConfig)
     assert(trackMetadata_pb == parsed_trackMetadata.getTrackMetadata)
@@ -230,11 +230,11 @@ class IofogControllerTest extends FlatSpec {
   }
   it should "gracefully ignore invalid tempus edge message content" in {
     val emptyConfig = TrackConfig()
-    val parsedConfig_empty = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(garbage_msgContent)
+    val parsedConfig_empty = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseConfigMessageContent(garbage_msgContent)
     assert(emptyConfig == parsedConfig_empty)
 
-    val fullConfig = IofogController.mergeConfigs(emptyConfig) _ tupled IofogController.parseConfigMessageContent(trackConfig_msgContent)
-    val parsedConfig_full = IofogController.mergeConfigs(fullConfig) _ tupled IofogController.parseConfigMessageContent(garbage_msgContent)
+    val fullConfig = Config.mergeConfigs(emptyConfig) _ tupled Parsers.parseConfigMessageContent(trackConfig_msgContent)
+    val parsedConfig_full = Config.mergeConfigs(fullConfig) _ tupled Parsers.parseConfigMessageContent(garbage_msgContent)
     assert(fullConfig == parsedConfig_full)
   }
   //===========================================================================

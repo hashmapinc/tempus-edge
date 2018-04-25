@@ -17,8 +17,8 @@ import org.eclipse.milo.opcua.stack.core.types.structured.ReferenceDescription
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint
 
 import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes, OpcConfig}
+import com.hashmapinc.tempus.edge.iofog.IofogConnection
 import com.hashmapinc.tempus.edge.opcTagFilter.Config
-import com.hashmapinc.tempus.edge.opcTagFilter.iofog.IofogConnection
 
 object OpcController {
   private val log = Logger(getClass())

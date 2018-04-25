@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.opcClient.iofog
+package com.hashmapinc.tempus.edge.opcClient
 
 import collection.JavaConverters._
 
@@ -6,14 +6,13 @@ import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
 import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes, DataMessageTypes}
-import com.hashmapinc.tempus.edge.opcClient.Config
 import com.hashmapinc.tempus.edge.opcClient.opc.{OpcConnection, OpcController}
 
 /**
  * This object holds the async logic for handling iofog events
  */
-object IofogController {
-  private val log = Logger(getClass())
+object IofogController extends com.hashmapinc.tempus.edge.iofog.IofogController {
+  val log = Logger(getClass())
 
   /**
    * Handles new messages

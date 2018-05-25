@@ -1,12 +1,13 @@
 package com.hashmapinc.tempus.edge.opcClient
 
+import scala.util.Try
 import collection.JavaConverters._
 
 import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
 import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes, DataMessageTypes}
-import com.hashmapinc.tempus.edge.opcClient.opc.{OpcConnection, OpcController}
+import com.hashmapinc.tempus.edge.opc.OpcConnection
 
 /**
  * This object holds the async logic for handling iofog events
@@ -35,7 +36,7 @@ object IofogController extends com.hashmapinc.tempus.edge.iofog.IofogController 
           // handle config update alerts
           if (msgType == ConfigMessageTypes.UPDATE_ALERT.value.toByte) {
             Config.updateConfigs
-            OpcConnection.updateClient
+            OpcConnection.updateClient(Try(Config.trackConfig.get.getOpcConfig))
             OpcController.updateSubscriptions
           } else 
             log.error("Could not handle message with protocol " + msgProtocol + " and type " + msgType)

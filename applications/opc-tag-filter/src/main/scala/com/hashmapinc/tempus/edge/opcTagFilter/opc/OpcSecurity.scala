@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.opcTagFilter.opc
+package com.hashmapinc.tempus.edge.opcClient.opc
 
 import java.io.FileInputStream
 import java.security.{KeyPair, KeyPairGenerator}
@@ -14,7 +14,7 @@ import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateBuilder
 import org.eclipse.milo.opcua.stack.core.util.SelfSignedCertificateGenerator
 
 import com.hashmapinc.tempus.edge.proto.OpcConfig
-import com.hashmapinc.tempus.edge.opcTagFilter.Config
+import com.hashmapinc.tempus.edge.opcClient.Config
 
 object OpcSecurity {
   private val log = Logger(getClass())
@@ -23,13 +23,13 @@ object OpcSecurity {
   // Generate keypair and certificate at run time
   val clientKeyPair = SelfSignedCertificateGenerator.generateRsaKeyPair(2048)
   val clientCertificate = (new SelfSignedCertificateBuilder(clientKeyPair)
-    .setCommonName("Tempus Edge OPC Tag Filter")
+    .setCommonName("Tempus Edge OPC Client")
     .setOrganization("hashmapinc")
     .setOrganizationalUnit("tempus edge")
     .setLocalityName("Atlanta")
     .setStateName("GA")
     .setCountryCode("US")
-    .setApplicationUri("urn:hashmapinc:tempus:edge:opc-tag-filter")
+    .setApplicationUri("urn:hashmapinc:tempus:edge:opc-client")
   ).build
   
   /**

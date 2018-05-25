@@ -16,7 +16,7 @@ import com.hashmapinc.tempus.edge.proto.OpcConfig
 object OpcConnection {
   private val log = Logger(getClass())
 
-  //create client
+  // create client
   var client: Option[OpcUaClient] = None
   
   /**
@@ -67,8 +67,8 @@ object OpcConnection {
 
     // return config
     OpcUaClientConfig.builder()
-      .setApplicationName(LocalizedText.english("hashmapinc tempus edge opc tag filter"))
-      .setApplicationUri("urn:hashmapinc:tempus:edge:opc-tag-filter")
+      .setApplicationName(LocalizedText.english("Hashmapinc Tempus Edge OPC Client"))
+      .setApplicationUri("urn:hashmapinc:tempus:edge:opc-client")
       .setCertificate(OpcSecurity.clientCertificate)
       .setKeyPair(OpcSecurity.clientKeyPair)
       .setEndpoint(endpoint.get)

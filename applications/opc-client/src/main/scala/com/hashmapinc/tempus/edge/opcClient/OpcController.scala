@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.opcClient.opc
+package com.hashmapinc.tempus.edge.opcClient
 
 import collection.JavaConverters._
 import scala.util.Try
@@ -21,7 +21,7 @@ import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId
 
 import com.hashmapinc.tempus.edge.proto.{TrackConfig, OpcConfig, OpcMessage, MessageProtocols, DataMessageTypes}
 import com.hashmapinc.tempus.edge.iofog.IofogConnection
-import com.hashmapinc.tempus.edge.opcClient.Config
+import com.hashmapinc.tempus.edge.opc.OpcConnection
 
 /** 
  *  This object holds the logic for handling OPC events

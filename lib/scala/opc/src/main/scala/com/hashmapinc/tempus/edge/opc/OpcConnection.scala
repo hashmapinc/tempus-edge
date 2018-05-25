@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.opcClient.opc
+package com.hashmapinc.tempus.edge.opc
 
 import scala.util.Try
 
@@ -10,7 +10,6 @@ import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription
 import org.eclipse.milo.opcua.stack.client.UaTcpStackClient
 import com.typesafe.scalalogging.Logger
 
-import com.hashmapinc.tempus.edge.opcClient.Config
 import com.hashmapinc.tempus.edge.proto.OpcConfig
 
 object OpcConnection {
@@ -95,20 +94,23 @@ object OpcConnection {
    * recursion utility for retrying client updating
    *
    * @param updatedClient           - Try[OpcUaClient] from the previous caller
-   * @param remainingAttempts       - Int value of remaining retry attempts
+   * @param opcConfig               - opcConfig to use for connecting
+   * @param remainingAttempts       - Int value of number of retries remaining
    *
    * @return successfulUpdateClient - Try[OpcUaClient] result of updateClient attempt
    */
   @scala.annotation.tailrec
   def recursiveUpdateClient(
     updatedClient:      Try[OpcUaClient],
+    opcConfig:          OpcConfig,
     remainingAttempts:  Int
   ): Try[OpcUaClient] = {
     if (updatedClient.isSuccess || remainingAttempts < 1) updatedClient else {
+      val reconnectionDelay = 10000L // TODO: extract this value from the opcConfig
       log.error("Could not update OPC client. Received error: " + updatedClient.failed.get)
-      log.error("Will retry connection {} more time(s) in {} milliseconds...", remainingAttempts, Config.OPC_RECONN_DELAY)
-      Thread.sleep(Config.OPC_RECONN_DELAY)
-      recursiveUpdateClient(Try(createOpcClient(Config.trackConfig.get.getOpcConfig)), remainingAttempts - 1)
+      log.error("Will retry connection {} more time(s) in {} milliseconds...", remainingAttempts, reconnectionDelay)
+      Thread.sleep(reconnectionDelay) 
+      recursiveUpdateClient(Try(createOpcClient(opcConfig)), opcConfig, remainingAttempts - 1)
     }
   }
 
@@ -116,10 +118,11 @@ object OpcConnection {
    *  updates the client attribute to the latest client instance with latest 
    *  opc configuration.
    *
-   *  If client creation fails, updateClient will retry every 
-   *  Config.OPC_RECONN_DELAY milliseconds until it succeeds.
+   *  @param opcConfig - tempus edge opocConfig proto object
    */
-  def updateClient: Unit = {
+  def updateClient(
+    opcConfig: Try[OpcConfig]
+  ): Unit = {
     this.synchronized {
       // destroy the existing client if it exists
       if (client.isDefined) {
@@ -127,14 +130,11 @@ object OpcConnection {
         client.get.disconnect
       }
 
-      // get latest local opcConfigs
-      val opcConf = Try(Config.trackConfig.get.getOpcConfig)
-
       // if opcConfig exists and has an endpoint, let's connect!
-      if (opcConf.isFailure || opcConf.get.endpoint.isEmpty)
+      if (opcConfig.isFailure || opcConfig.get.endpoint.isEmpty)
         log.error("Could not update OPC client: no suitable OPC Configuration found. Will retry when new configs arrive.")
       else {
-        client = recursiveUpdateClient(Try(createOpcClient(opcConf.get)), Config.OPC_RECONN_MAX_ATTEMPTS).toOption
+        client = recursiveUpdateClient(Try(createOpcClient(opcConfig.get)), opcConfig.get, 5).toOption // TODO: paramterize 5 to be a variable from the opcConfig.
         if (client.isDefined)
           log.info("OPC client successfully updated!")
         else 

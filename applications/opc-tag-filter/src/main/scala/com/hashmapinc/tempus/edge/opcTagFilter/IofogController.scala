@@ -6,7 +6,6 @@ import com.iotracks.elements.IOMessage
 import com.typesafe.scalalogging.Logger
 
 import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes, DataMessageTypes}
-import com.hashmapinc.tempus.edge.opcTagFilter.opc.OpcController
 
 /**
  * This object holds the async logic for handling iofog events

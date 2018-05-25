@@ -1,9 +1,11 @@
 package com.hashmapinc.tempus.edge.opcTagFilter
 
+import scala.util.Try
+
 import com.typesafe.scalalogging.Logger
 
 import com.hashmapinc.tempus.edge.iofog.IofogConnection
-import com.hashmapinc.tempus.edge.opcTagFilter.opc.{OpcConnection, OpcController}
+import com.hashmapinc.tempus.edge.opc.OpcConnection
 
 /**
  * Driver for the overall edge application
@@ -21,7 +23,7 @@ object Driver {
 
     Config.updateConfigs                  // load initial configs.
     if (Config.trackConfig.isDefined) {
-      OpcConnection.updateClient          // init client connection.
+      OpcConnection.updateClient(Try(Config.trackConfig.get.getOpcConfig)) // init client connection.
       OpcController.updateSubscriptions   // look for subscriptions.
     }
       

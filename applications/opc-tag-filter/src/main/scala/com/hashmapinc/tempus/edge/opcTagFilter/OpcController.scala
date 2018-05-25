@@ -1,4 +1,4 @@
-package com.hashmapinc.tempus.edge.opcTagFilter.opc
+package com.hashmapinc.tempus.edge.opcTagFilter
 
 import scala.util.Try
 import scala.util.matching.Regex
@@ -18,7 +18,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.Unsigned.uint
 
 import com.hashmapinc.tempus.edge.proto.{MessageProtocols, ConfigMessageTypes, OpcConfig}
 import com.hashmapinc.tempus.edge.iofog.IofogConnection
-import com.hashmapinc.tempus.edge.opcTagFilter.Config
+import com.hashmapinc.tempus.edge.opc.OpcConnection
 
 object OpcController {
   private val log = Logger(getClass())

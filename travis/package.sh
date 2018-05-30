@@ -8,4 +8,4 @@ cd applications
 make
 
 # go back to the project home
-cd $(JSON_TRANSLATOR)
+cd $(PROJECT_HOME)

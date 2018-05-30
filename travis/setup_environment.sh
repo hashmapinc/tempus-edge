@@ -1,9 +1,6 @@
 #!/bin/bash
 
-# install java
+# configure go
 
-# install maven
-
-# install go
-
-# install docker
+# configure docker
+echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin

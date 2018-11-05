@@ -8,10 +8,10 @@ services:
 addons:
   apt:
     sources:
-    - ubuntu-toolchain-r-test
+    - deadsnakes
     packages:
-    - java
-    - go
+    - golang-go
+    - python3.6
     - maven
 
 # define the build

@@ -3,9 +3,12 @@
 # remember project home dir
 PROJECT_HOME=$(shell pwd)
 
-# go to the applications and deploy them
-cd applications
-make deploy
+# install lib/proto
+cd lib/proto
 
-# go back to the project home
-cd $(PROJECT_HOME)
+# point golang vars to proper locations
+export GOPATH="$HOME/go"
+export PATH=$PATH:$GOPATH/bin
+export GOPATH="$GOPATH:$PROJECT_HOME/lib/go"
+export GOPATH="$GOPATH:$PROJECT_HOME/applications/mqtt-client-go"
+export GOPATH="$GOPATH:$PROJECT_HOME/protobuf-definitions/go-protobuf-output"
